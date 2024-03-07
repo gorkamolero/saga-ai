@@ -2,6 +2,7 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import { XMarkIcon, Bars3Icon } from "@heroicons/react/24/solid";
+import { DarkModeToggle } from "../DarkModeToggle";
 
 const routes: { title: string; href: string }[] = [
   { title: "Features", href: "#features" },
@@ -17,14 +18,14 @@ const Navbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="flex h-16 items-center justify-between px-6 lg:px-14">
-      <div className="flex items-center">
+    <div className="flex h-16 items-center justify-between gap-4 px-6 lg:px-14">
+      <div className="mr-auto flex items-center">
         <Link href={"/"} className="shrink-0">
           <h1 className="text-2xl font-bold text-accent-foreground">
             Tubesleuth
           </h1>
         </Link>
-        <div className="hidden w-full justify-end gap-1 bg-background px-4 py-2 sm:flex">
+        {/* <div className="hidden w-full justify-end gap-1 bg-background px-4 py-2 sm:flex">
           {routes.map((route, index) => (
             <Link
               key={index}
@@ -34,8 +35,10 @@ const Navbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               {route.title}
             </Link>
           ))}
-        </div>
+        </div> */}
       </div>
+
+      <DarkModeToggle />
 
       {children}
 

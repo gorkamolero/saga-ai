@@ -6,12 +6,12 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = async ({
   children,
 }) => {
   return (
-    <>
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
       <Navbar>
         <AuthComponent />
       </Navbar>
       {children}
-    </>
+    </div>
   );
 };
 
