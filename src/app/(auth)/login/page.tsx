@@ -17,9 +17,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
 
-import { FaGithub } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import { signIn, signUp } from "../actions";
+import { signIn } from "../actions";
 
 const registerSchema = z.object({
   email: z.string().email(),

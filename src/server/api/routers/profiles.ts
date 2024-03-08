@@ -10,7 +10,7 @@ export const profileRouter = createTRPCRouter({
         firstName: z.string(),
         lastName: z.string(),
         bio: z.string(),
-        x_profile: z.string(),
+        x_handle: z.string(),
         website: z.union([z.literal(""), z.string().trim().url()]),
       }),
     )
@@ -20,17 +20,10 @@ export const profileRouter = createTRPCRouter({
         firstName: input.firstName,
         lastName: input.lastName,
         bio: input.bio,
-        x_profile: input.x_profile,
+        x_handle: input.x_handle,
         website: input.website,
       });
 
       return user;
     }),
-
-  getCurrent: privateProcedure.query(async ({ ctx }) => {
-    const profile = await ctx.db.query.users.findFirst({
-      where: eq(users.id, ctx.user.id),
-    });
-    return profile;
-  }),
 });

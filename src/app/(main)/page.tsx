@@ -1,4 +1,4 @@
-import { Chat } from "@/components/Chat";
+import { Chat } from "@/components/UIChat";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
