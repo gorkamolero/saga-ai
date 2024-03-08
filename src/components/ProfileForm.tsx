@@ -27,7 +27,6 @@ import { profileSchema } from "@/lib/validators/profile";
 
 import { useRouter } from "next/navigation";
 import { api as clientApi } from "@/trpc/react";
-import { capitalizeFirstLetter } from "@/lib/utils";
 import { FaXTwitter } from "react-icons/fa6";
 import { ProfileInput } from "@/server/api/routers/users";
 
