@@ -1,56 +1,21 @@
+import "server-only";
+
 import { OpenAI } from "openai";
-import { createAI, getMutableAIState, render } from "ai/rsc";
+import { createAI, getMutableAIState, createStreamableUI } from "ai/rsc";
 import { z } from "zod";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { LoadingSpinner } from "@/components/ui/spinner";
+import { IdeaFormCard } from "@/components/IdeaFormCard";
+import { AiMessage } from "@/components/ui/ai-message";
+import { runOpenAICompletion, sleep } from "@/lib/utils";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// An example of a spinner component. You can also import your own components,
-// or 3rd party component libraries.
-function Spinner() {
-  return <div>Loading...</div>;
-}
-
-// An example of a flight card component.
-const IdeaCard = ({ description }: { description: string }) => {
-  return (
-    <Card>
-      <CardHeader>Idea</CardHeader>
-      <CardContent>{description}</CardContent>
-    </Card>
-  );
-};
-
-// An example of a function that fetches flight information from an external API.
-async function getIdeas() {
-  return [
-    {
-      id: "1",
-      description: `Title: "Unveiling the Emerald Tablet"
-    Description: "Explore the mystical Emerald Tablet, attributed to Hermes Trismegistus, and its cryptic phrases that have intrigued seekers for centuries."`,
-    },
-    {
-      id: "2",
-      description: `Title: "Hermes Trismegistus: The Thrice-Great Teacher"
-    Description: "Learn about Hermes Trismegistus, revered as a teacher, philosopher, and guide, merging Atlantean and Egyptian knowledge."`,
-    },
-    {
-      id: "3",
-      description: `Title: "Atlantean Alchemy: The Quest for Transformation"
-      Description: "Explore the Atlantean approach to alchemy, not just as physical transmutation but as a path to spiritual enlightenment."`,
-    },
-    // Add more ideas as needed
-  ];
-}
-
 async function submitUserMessage(userInput: string) {
   "use server";
 
   const aiState = getMutableAIState<typeof AI>();
-
-  // Update the AI state with the new user message.
   aiState.update([
     ...aiState.get(),
     {
@@ -59,77 +24,90 @@ async function submitUserMessage(userInput: string) {
     },
   ]);
 
-  // The `render()` creates a generated, streamable UI.
-  const ui = render({
-    model: "gpt-4-0125-preview",
-    provider: openai,
+  const reply = createStreamableUI(
+    <AiMessage>
+      <LoadingSpinner />
+    </AiMessage>,
+  );
+
+  const completion = runOpenAICompletion(openai, {
+    model: "gpt-3.5-turbo",
     messages: [
       {
         role: "system",
-        content:
-          "You are the user's writing assistant. If the user asks to give you yesterday's ideas, you just give them the ideas as if that was right now",
+        content: `
+You are a content-creation conversational coach bot and you help users develop compelling video ideas and scripts. Your goal is to extract a meaningful description for their video idea from their answer.
+
+Your conversation style should be concise, direct, and serious. Write like Ernest Hemingway or Jack Kerouac.
+
+-----
+
+CALL THE FUNCTION \`display_idea\`
+
+-----
+
+Besides that, you can also chat with users and do refine or propose ideas.
+`,
       },
       { role: "user", content: userInput },
     ],
-    // `text` is called when an AI returns a text response (as opposed to a tool call).
-    // Its content is streamed from the LLM, so this function will be called
-    // multiple times with `content` being incremental.
-    text: ({ content, done }) => {
-      // When it's the final content, mark the state as done and ready for the client to access.
-      if (done) {
-        aiState.done([
-          ...aiState.get(),
-          {
-            role: "assistant",
-            content,
-          },
-        ]);
-      }
-
-      return <p>{content}</p>;
-    },
-    tools: {
-      get_ideas: {
-        description: "Get a list of ideas for the user",
-        parameters: z
-          .object({
-            description: z.string().describe("the description of the idea"),
-          })
-          .required(),
-        render: async function* () {
-          // Show a spinner on the client while we wait for the response.
-          yield <Spinner />;
-
-          // Fetch the flight information from an external API.
-          const ideas = await getIdeas();
-
-          // Update the final AI state.
-          aiState.done([
-            ...aiState.get(),
-            {
-              role: "function",
-              name: "get_ideas",
-              // Content can be any string to provide context to the LLM in the rest of the conversation.
-              content: JSON.stringify(ideas),
-            },
-          ]);
-
-          // Return the flight card to the client.
-          return (
-            <div className="grid gap-4 ">
-              {ideas.map((idea) => (
-                <IdeaCard key={idea.id} description={idea.description} />
-              ))}
-            </div>
-          );
-        },
+    functions: [
+      {
+        name: "display_idea",
+        description: "Display the video idea back to the user",
+        parameters: z.object({
+          title: z.string().describe("A nice title for the user's idea"),
+          description: z
+            .string()
+            .describe("A brief description of the video idea"),
+        }),
       },
-    },
+      {
+        name: "save_idea",
+        description: "Save a video idea to the database",
+        parameters: z.object({
+          title: z.string().describe("The title of the video idea"),
+          description: z
+            .string()
+            .describe("A brief description of the video idea"),
+        }),
+      },
+    ],
+    temperature: 0.7,
+  });
+
+  completion.onTextContent((content, isFinal) => {
+    reply.update(<AiMessage>{content}</AiMessage>);
+    if (isFinal) {
+      reply.done();
+      aiState.done([...aiState.get(), { role: "assistant", content }]);
+    }
+  });
+
+  completion.onFunctionCall("display_idea", async ({ title, description }) => {
+    reply.update(
+      <AiMessage>
+        <LoadingSpinner />
+      </AiMessage>,
+    );
+
+    await sleep(1000);
+
+    reply.done(<IdeaFormCard title={title} description={description} />);
+
+    aiState.done([
+      ...aiState.get(),
+      {
+        role: "function",
+        name: "display_idea",
+        content: description,
+      },
+    ]);
   });
 
   return {
     id: Date.now(),
-    display: ui,
+    display: reply.value,
   };
 }
 

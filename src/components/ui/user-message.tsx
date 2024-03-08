@@ -9,7 +9,7 @@ export const UserMessage = ({ children }: { children: React.ReactNode }) => {
       </Avatar>
 
       <div className="flex flex-col space-y-2">
-        <div className="rounded-md bg-white p-4 text-sm text-gray-600 shadow">
+        <div className="rounded-lg bg-white p-4 text-sm text-gray-600 shadow">
           {children}
         </div>
       </div>

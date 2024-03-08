@@ -6,7 +6,7 @@ const RootLayout: React.FC<{ children: React.ReactNode }> = async ({
   children,
 }) => {
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background pt-16">
       <Navbar>
         <AuthComponent />
       </Navbar>

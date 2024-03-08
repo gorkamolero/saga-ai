@@ -1,20 +1,18 @@
 "use client";
 
-import { useChat } from "ai/react";
-
-import { AiMessage } from "./ui/ai-message";
 import { UserMessage } from "./ui/user-message";
 import { ChatInput } from "./ChatInput";
 import { useEffect, useRef, useState } from "react";
+import { useActions, useUIState } from "ai/rsc";
+import { AI } from "@/app/action";
+import { EmptyScreen } from "./EmptyChatScreen";
+import { ChatScrollAnchor } from "@/lib/hooks/chat-scroll-anchor";
 
 export function Chat() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit } = useChat({
-    onFinish: () => {
-      setIsStreaming(false);
-    },
-  });
+  const [inputValue, setInputValue] = useState("");
+  const [messages, setMessages] = useUIState<typeof AI>();
+  const { submitUserMessage } = useActions<typeof AI>();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -26,44 +24,87 @@ export function Chat() {
     }
   });
 
-  const handleStart = (e: React.FormEvent<HTMLFormElement>) => {
-    setIsStreaming(true);
-    handleSubmit(e);
-  };
-
   return (
     <div className="flex h-full flex-1 flex-col">
       <div className="flex h-full flex-col">
         <div className="flex flex-grow flex-col space-y-4 overflow-y-auto">
-          <ul
-            className="flex flex-col space-y-4 p-6"
-            style={{
-              paddingBottom: "var(--chat-input-height)",
-            }}
-          >
-            {messages.map((m, index) => (
-              <li key={index} className="mt-4">
-                {m.role === "user" ? (
-                  <UserMessage>{m.content}</UserMessage>
-                ) : (
-                  <AiMessage
-                    isStreaming={index === messages.length - 1 && isStreaming}
-                  >
-                    {m.content}
-                  </AiMessage>
-                )}
-              </li>
-            ))}
-          </ul>
+          {messages.length === 0 ? (
+            <EmptyScreen
+              submitMessage={async (message) => {
+                // Add user message UI
+                setMessages((currentMessages) => [
+                  ...currentMessages,
+                  {
+                    id: Date.now(),
+                    display: <UserMessage>{message}</UserMessage>,
+                  },
+                ]);
 
-          <div className="scroller" ref={scrollRef} />
+                // Submit and get response message
+                const responseMessage = await submitUserMessage(message);
+                setMessages((currentMessages) => [
+                  ...currentMessages,
+                  responseMessage,
+                ]);
+              }}
+            />
+          ) : (
+            <ul
+              className="flex flex-col space-y-4 p-6"
+              style={{
+                paddingBottom: "var(--chat-input-height)",
+              }}
+            >
+              {messages.map((m, index) => {
+                return (
+                  <li key={index} className="mt-4">
+                    {m.display}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          <ChatScrollAnchor trackVisibility />
         </div>
       </div>
 
       <ChatInput
-        input={input}
-        handleInputChange={handleInputChange}
-        handleSubmit={handleStart}
+        input={inputValue}
+        handleInputChange={(e) => setInputValue(e.target.value)}
+        handleSubmit={async (e: any) => {
+          e.preventDefault();
+
+          // Blur focus on mobile
+          if (window.innerWidth < 600) {
+            e.target["message"]?.blur();
+          }
+
+          const value = inputValue.trim();
+          setInputValue("");
+          if (!value) return;
+
+          // Add user message UI
+          setMessages((currentMessages) => [
+            ...currentMessages,
+            {
+              id: Date.now(),
+              display: <UserMessage>{value}</UserMessage>,
+            },
+          ]);
+
+          try {
+            // Submit and get response message
+            const responseMessage = await submitUserMessage(value);
+            setMessages((currentMessages) => [
+              ...currentMessages,
+              responseMessage,
+            ]);
+          } catch (error) {
+            // You may want to show a toast or trigger an error state.
+            console.error(error);
+          }
+        }}
       />
     </div>
   );

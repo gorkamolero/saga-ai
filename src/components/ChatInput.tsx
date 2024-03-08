@@ -1,5 +1,8 @@
 "use client";
 
+import { useEnterSubmit } from "@/lib/hooks/use-enter-submit";
+import { useEffect, useRef } from "react";
+
 export const ChatInput = ({
   input,
   handleInputChange,
@@ -9,25 +12,53 @@ export const ChatInput = ({
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }) => {
+  const { formRef, onKeyDown } = useEnterSubmit();
+
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "/") {
+        if (
+          e.target &&
+          ["INPUT", "TEXTAREA"].includes((e.target as any).nodeName)
+        ) {
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        if (inputRef?.current) {
+          inputRef.current.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [inputRef]);
+
   return (
-    <div
-      className="fixed bottom-0 z-40 flex w-full origin-bottom justify-center p-8"
-      style={{
-        height: "var(--chat-input-height)",
-      }}
-    >
-      <div className="relative z-10 flex min-h-12 w-full max-w-[500px] items-center justify-center gap-2 rounded-3xl bg-zinc-900 px-2 shadow-lg transition-all duration-300 sm:shadow-black/40">
-        <div className="hidden items-center justify-center rounded-l-full sm:flex">
-          <img
-            alt="Avatar"
-            width="32"
-            height="32"
-            className="relative flex shrink-0 rounded-full"
-            src="https://vercel.com/api/www/avatar/p7viAYxh6bvecCdXcHhCqKKZ?s=64"
-          />
-        </div>
-        <div className="relative flex w-full min-w-0 flex-1 items-center self-end border-zinc-600 pl-2 sm:border-l">
-          <form className="h-full w-full" onSubmit={handleSubmit}>
+    <form className="h-full w-full" onSubmit={handleSubmit} ref={formRef}>
+      <div
+        className="fixed bottom-0 z-40 flex w-full origin-bottom justify-center p-8"
+        style={{
+          height: "var(--chat-input-height)",
+        }}
+      >
+        <div className="relative z-10 flex min-h-12 w-full max-w-[500px] items-center justify-center gap-2 rounded-3xl bg-zinc-900 px-2 shadow-lg transition-all duration-300 sm:shadow-black/40">
+          <div className="hidden items-center justify-center rounded-l-full sm:flex">
+            <img
+              alt="Avatar"
+              width="32"
+              height="32"
+              className="relative flex shrink-0 rounded-full"
+              src="https://vercel.com/api/www/avatar/p7viAYxh6bvecCdXcHhCqKKZ?s=64"
+            />
+          </div>
+          <div className="relative flex w-full min-w-0 flex-1 items-center self-end border-zinc-600 pl-2 sm:border-l">
             <div
               className="relative flex h-fit min-h-full w-full items-center transition-all duration-300"
               style={{ height: "47px" }}
@@ -38,7 +69,7 @@ export const ChatInput = ({
               <div className="relative flex min-w-0 flex-1 self-start">
                 <div className="pointer-events-none invisible -ml-[100%] min-w-[50%] flex-[1_0_50%] overflow-x-visible opacity-0">
                   <div className="pointer-events-none invisible w-full opacity-0">
-                    Ask away!
+                    I have an idea...
                   </div>
                 </div>
                 <input
@@ -47,7 +78,7 @@ export const ChatInput = ({
                   maxLength={1000}
                   minLength={2}
                   className="w-full min-w-[50%] flex-[1_0_50%] resize-none border-0 bg-transparent py-2.5 pr-2 text-sm leading-relaxed text-white shadow-none outline-none ring-0 [scroll-padding-block:0.75rem] selection:bg-teal-300 selection:text-black placeholder:text-zinc-400 disabled:bg-transparent disabled:opacity-80 sm:py-3"
-                  placeholder="Ask away!"
+                  placeholder="I have an idea..."
                   spellCheck={false}
                   style={{
                     colorScheme: "dark",
@@ -66,33 +97,34 @@ export const ChatInput = ({
                 />
               </div>
             </div>
-          </form>
-        </div>
-        <div className="flex h-full items-center gap-2 border-l border-zinc-600 pl-2">
-          <button
-            id="refine-button"
-            className="flex h-8 w-8 shrink-0 items-center justify-center self-center rounded-full border border-zinc-600 text-zinc-300 outline-none ring-offset-1 ring-offset-zinc-900 transition-colors hover:bg-zinc-800 hover:text-zinc-50 focus-visible:ring-1 focus-visible:ring-zinc-300 disabled:opacity-50"
-            data-state="closed"
-          >
-            <span className="sr-only">Send</span>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          </div>
+          <div className="flex h-full items-center gap-2 border-l border-zinc-600 pl-2">
+            <button
+              id="refine-button"
+              className="flex h-8 w-8 shrink-0 items-center justify-center self-center rounded-full border border-zinc-600 text-zinc-300 outline-none ring-offset-1 ring-offset-zinc-900 transition-colors hover:bg-zinc-800 hover:text-zinc-50 focus-visible:ring-1 focus-visible:ring-zinc-300 disabled:opacity-50"
+              data-state="closed"
+              type="submit"
             >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M13.5 3V2.25H15V3V10C15 10.5523 14.5522 11 14 11H3.56062L5.53029 12.9697L6.06062 13.5L4.99996 14.5607L4.46963 14.0303L1.39641 10.9571C1.00588 10.5666 1.00588 9.93342 1.39641 9.54289L4.46963 6.46967L4.99996 5.93934L6.06062 7L5.53029 7.53033L3.56062 9.5H13.5V3Z"
-                fill="currentColor"
-              ></path>
-            </svg>
-            <span className="sr-only">Edit</span>
-          </button>
+              <span className="sr-only">Send</span>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M13.5 3V2.25H15V3V10C15 10.5523 14.5522 11 14 11H3.56062L5.53029 12.9697L6.06062 13.5L4.99996 14.5607L4.46963 14.0303L1.39641 10.9571C1.00588 10.5666 1.00588 9.93342 1.39641 9.54289L4.46963 6.46967L4.99996 5.93934L6.06062 7L5.53029 7.53033L3.56062 9.5H13.5V3Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+              <span className="sr-only">Edit</span>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 };

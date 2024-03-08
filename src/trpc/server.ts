@@ -14,6 +14,8 @@ import { cache } from "react";
 import { appRouter, type AppRouter } from "@/server/api/root";
 import { createTRPCContext } from "@/server/api/trpc";
 import { transformer } from "./shared";
+import { experimental_createServerActionHandler } from "@trpc/next/app-dir/server";
+import { SupabaseAuthClient } from "@supabase/supabase-js/dist/module/lib/SupabaseAuthClient";
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when

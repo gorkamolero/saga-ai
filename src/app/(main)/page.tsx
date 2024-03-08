@@ -1,9 +1,9 @@
-import { Chat } from "@/components/UIChat";
+import { Chat } from "@/components/Chat";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 export default async function Home() {
   const supabase = createClient(cookies());
