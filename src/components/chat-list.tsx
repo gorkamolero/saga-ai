@@ -4,12 +4,17 @@ export function ChatList({ messages }: { messages: any[] }) {
   }
 
   return (
-    <div className="relative mx-auto flex max-w-2xl flex-col items-start p-4">
+    <ul
+      className="flex max-w-md flex-col space-y-4 p-6"
+      style={{
+        paddingBottom: "var(--chat-input-height)",
+      }}
+    >
       {messages.map((message, index) => (
-        <div key={index} className="pb-4">
+        <li key={index} className="mt-4">
           {message.display}
-        </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

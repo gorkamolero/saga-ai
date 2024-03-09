@@ -1,27 +1,26 @@
-"use client";
+'use client';
 
-import { useEnterSubmit } from "@/lib/hooks/use-enter-submit";
-import { useEffect, useRef } from "react";
+import { AI } from '@/app/action';
+import { useEnterSubmit } from '@/lib/hooks/use-enter-submit';
+import { useActions, useUIState } from 'ai/rsc';
+import { useEffect, useRef, useState } from 'react';
+import { UserMessage } from './ui/user-message';
 
-export const ChatInput = ({
-  input,
-  handleInputChange,
-  handleSubmit,
-}: {
-  input: string;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-}) => {
+export const ChatInput = () => {
+  const [inputValue, setInputValue] = useState('');
+  const [messages, setMessages] = useUIState<typeof AI>();
+  const { submitUserMessage } = useActions<typeof AI>();
+
   const { formRef, onKeyDown } = useEnterSubmit();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/") {
+      if (e.key === '/') {
         if (
           e.target &&
-          ["INPUT", "TEXTAREA"].includes((e.target as any).nodeName)
+          ['INPUT', 'TEXTAREA'].includes((e.target as any).nodeName)
         ) {
           return;
         }
@@ -33,19 +32,50 @@ export const ChatInput = ({
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [inputRef]);
 
+  const onSubmit = async (e: any) => {
+    e.preventDefault();
+
+    // Blur focus on mobile
+    if (window.innerWidth < 600) {
+      e.target['message']?.blur();
+    }
+
+    const value = inputValue.trim();
+    setInputValue('');
+    if (!value) return;
+
+    // Add user message UI
+    setMessages((currentMessages) => [
+      ...currentMessages,
+      {
+        id: Date.now(),
+        display: <UserMessage>{value}</UserMessage>,
+      },
+    ]);
+
+    try {
+      // Submit and get response message
+      const responseMessage = await submitUserMessage(value);
+      setMessages((currentMessages) => [...currentMessages, responseMessage]);
+    } catch (error) {
+      // You may want to show a toast or trigger an error state.
+      console.error(error);
+    }
+  };
+
   return (
-    <form className="h-full w-full" onSubmit={handleSubmit} ref={formRef}>
+    <form className="h-full w-full" onSubmit={onSubmit} ref={formRef}>
       <div
         className="fixed bottom-0 z-40 flex w-full origin-bottom justify-center p-8"
         style={{
-          height: "var(--chat-input-height)",
+          height: 'var(--chat-input-height)',
         }}
       >
         <div className="relative z-10 flex min-h-12 w-full max-w-[500px] items-center justify-center gap-2 rounded-3xl bg-zinc-900 px-2 shadow-lg transition-all duration-300 sm:shadow-black/40">
@@ -61,7 +91,7 @@ export const ChatInput = ({
           <div className="relative flex w-full min-w-0 flex-1 items-center self-end border-zinc-600 pl-2 sm:border-l">
             <div
               className="relative flex h-fit min-h-full w-full items-center transition-all duration-300"
-              style={{ height: "47px" }}
+              style={{ height: '47px' }}
             >
               <label htmlFor="textarea-input" className="sr-only">
                 Prompt
@@ -81,11 +111,11 @@ export const ChatInput = ({
                   placeholder="I have an idea..."
                   spellCheck={false}
                   style={{
-                    colorScheme: "dark",
-                    height: "47px !important",
+                    colorScheme: 'dark',
+                    height: '47px !important',
                   }}
-                  value={input}
-                  onChange={handleInputChange}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
                 />
               </div>
               <div className="flex items-center">

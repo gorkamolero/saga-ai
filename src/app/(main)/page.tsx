@@ -1,7 +1,7 @@
-import { Chat } from "@/components/Chat";
-import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { Chat } from '@/components/chat';
+import { createClient } from '@/utils/supabase/server';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 // export const runtime = "edge";
 
@@ -12,7 +12,7 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) redirect('/login');
 
   return <Chat />;
 }
