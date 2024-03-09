@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '@/trpc/react';
 import { Button } from '../ui/button';
 import { useActions, useUIState } from 'ai/rsc';
@@ -24,6 +24,15 @@ export const ScriptWriter = () => {
     const value = event.target.value;
     setSelectedIdeaID(value);
   };
+
+  useEffect(() => {
+    if (ideas && ideas.length) {
+      ideas.sort((a, b) => {
+        return a.createdAt < b.createdAt ? 1 : -1;
+      });
+      if (ideas[0]) setSelectedIdeaID(ideas[0].id);
+    }
+  }, [ideas]);
 
   if (error || !ideas) {
     return <ContentCard xtra={<LoadingSpinner size={48} />} />;

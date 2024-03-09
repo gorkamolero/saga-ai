@@ -53,8 +53,6 @@ export function Chat() {
             <ChatList messages={messages} />
           )}
 
-          <ScriptWriter />
-
           <ChatScrollAnchor trackVisibility />
         </div>
       </div>

@@ -1,15 +1,16 @@
-"use client";
-import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import { XMarkIcon, Bars3Icon } from "@heroicons/react/24/solid";
-import Sparkles from "react-sparkle";
-import { DarkModeToggle } from "@/components/DarkModeToggle";
-import { api } from "@/trpc/react";
+'use client';
+import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import { XMarkIcon, Bars3Icon } from '@heroicons/react/24/solid';
+import Sparkles from 'react-sparkle';
+import { DarkModeToggle } from '@/components/DarkModeToggle';
+import { api } from '@/trpc/react';
+import { Button } from '../ui/button';
 
 const routes: { title: string; href: string }[] = [
-  { title: "Features", href: "#features" },
-  { title: "Resources", href: "#resources" },
-  { title: "Pricing", href: "#pricing" },
+  { title: 'Features', href: '#features' },
+  { title: 'Resources', href: '#resources' },
+  { title: 'Pricing', href: '#pricing' },
 ];
 
 const Navbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -20,52 +21,61 @@ const Navbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const { data: user, isLoading } = api.users.getUserWithInnerCount.useQuery();
 
-  const [isSparkling, setIsSparkling] = useState(false);
-
-  useEffect(() => {
-    if (user?.ideasCount && user?.ideasCount > 0) {
-      setIsSparkling(true);
-    }
-
-    // count 3 seconds
-    const timeout = setTimeout(() => {
-      setIsSparkling(false);
-    }, 3000);
-
-    return () => {
-      setIsSparkling(false);
-      clearTimeout(timeout);
-    };
-  }, [user?.ideasCount]);
-
   return (
     <div className="fixed top-0 z-40 flex h-16 w-full items-center justify-between gap-4 bg-background px-6 lg:px-14">
       <div className="mr-auto flex items-center">
-        <Link href={"/"} className="shrink-0">
+        <Link href={'/'} className="shrink-0">
           <h1 className="text-2xl font-bold text-accent-foreground">
             Tubesleuth
           </h1>
         </Link>
         <div className="sparkles relative hidden w-full justify-end gap-1 bg-background px-4 py-2 sm:flex">
-          {!isLoading && user?.ideasCount && user?.ideasCount > 0 ? (
+          {isLoading ? null : (
             <>
-              <Link
-                href={"/ideas"}
-                className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
-              >
-                Ideas
-              </Link>
-              {isSparkling && (
-                <Sparkles
-                  color="red"
-                  count={20}
-                  minSize={7}
-                  maxSize={12}
-                  flicker={false}
-                />
-              )}
+              {user?.ideasCount && user?.ideasCount > 0 ? (
+                <Link
+                  href={'/ideas'}
+                  className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+                >
+                  Ideas
+                </Link>
+              ) : null}
+              {user?.writersCount && user?.writersCount > 0 ? (
+                <Link
+                  href={'/writers'}
+                  className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+                >
+                  Writers
+                </Link>
+              ) : null}
+              {user?.scriptsCount && user?.scriptsCount > 0 ? (
+                <Link
+                  href={'/scripts'}
+                  className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+                >
+                  Scripts
+                </Link>
+              ) : null}
+              {user?.voiceoversCount && user?.voiceoversCount > 0 ? (
+                <Link
+                  href={'/voiceovers'}
+                  className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+                >
+                  Voiceovers
+                </Link>
+              ) : null}
+              {user?.videosCount && user?.videosCount > 0 ? (
+                <Button asChild variant="ghost">
+                  <Link
+                    href={'/videos'}
+                    className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+                  >
+                    Videos
+                  </Link>
+                </Button>
+              ) : null}
             </>
-          ) : null}
+          )}
         </div>
         {/* <div className="hidden w-full justify-end gap-1 bg-background px-4 py-2 sm:flex">
           {routes.map((route, index) => (

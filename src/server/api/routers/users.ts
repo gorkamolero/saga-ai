@@ -1,8 +1,15 @@
-import { z } from "zod";
-import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
-import { ideas, users } from "@/server/db/schema";
-import { count, eq } from "drizzle-orm";
-import { profileSchema } from "@/lib/validators/profile";
+import { z } from 'zod';
+import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
+import {
+  ideas,
+  scripts,
+  users,
+  videos,
+  voiceovers,
+  writers,
+} from '@/server/db/schema';
+import { count, eq } from 'drizzle-orm';
+import { profileSchema } from '@/lib/validators/profile';
 
 export type ProfileInput = z.infer<typeof profileSchema>;
 
@@ -64,16 +71,41 @@ export const userRouter = createTRPCRouter({
       .from(ideas)
       .where(eq(ideas.userId, ctx.user.id));
 
-    if (!ideasCount[0]) {
-      return {
-        ...user,
-        ideasCount: 0,
-      };
-    }
+    const writersCount = await ctx.db
+      .select({
+        value: count(),
+      })
+      .from(writers)
+      .where(eq(writers.userId, ctx.user.id));
+
+    const scriptsCount = await ctx.db
+      .select({
+        value: count(),
+      })
+      .from(scripts)
+      .where(eq(scripts.userId, ctx.user.id));
+
+    const voiceoversCount = await ctx.db
+      .select({
+        value: count(),
+      })
+      .from(voiceovers)
+      .where(eq(voiceovers.userId, ctx.user.id));
+
+    const videosCount = await ctx.db
+      .select({
+        value: count(),
+      })
+      .from(videos)
+      .where(eq(videos.userId, ctx.user.id));
 
     return {
       ...user,
-      ideasCount: ideasCount[0].value,
+      ...(ideasCount[0] && { ideasCount: ideasCount[0].value }),
+      ...(writersCount[0] && { writersCount: writersCount[0].value }),
+      ...(scriptsCount[0] && { scriptsCount: scriptsCount[0].value }),
+      ...(voiceoversCount[0] && { voiceoversCount: voiceoversCount[0].value }),
+      ...(videosCount[0] && { videosCount: videosCount[0].value }),
     };
   }),
 });
