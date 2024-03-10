@@ -1,6 +1,5 @@
 import { bravura } from '@/app/action';
 import { scriptwriter } from '../prompts/scriptwriter';
-import parseJson from 'parse-json';
 
 export const generateScript = async ({
   title,

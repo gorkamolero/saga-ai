@@ -5,9 +5,9 @@ export function ChatList({ messages }: { messages: any[] }) {
 
   return (
     <ul
-      className="flex max-w-md flex-col space-y-4 p-6"
+      className="flex max-w-lg flex-col space-y-4 p-6"
       style={{
-        paddingBottom: "var(--chat-input-height)",
+        paddingBottom: 'var(--chat-input-height)',
       }}
     >
       {messages.map((message, index) => (

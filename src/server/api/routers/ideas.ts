@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from 'zod';
 // import { v4 as uuid } from "uuid";
 
-import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
-import { ideas } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
-import { v4 } from "uuid";
+import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
+import { ideas } from '@/server/db/schema';
+import { eq } from 'drizzle-orm';
+import { v4 } from 'uuid';
 
 export const ideaRouter = createTRPCRouter({
   getIdeas: privateProcedure.query(async ({ ctx }) => {
@@ -13,6 +13,29 @@ export const ideaRouter = createTRPCRouter({
     });
     return getideas;
   }),
+
+  createIdea: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        description: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.insert(ideas).values({
+        id: input.id,
+        userId: ctx.user.id,
+        title: input.title,
+        description: input.description,
+        createdAt: new Date(),
+      });
+
+      return {
+        title: input.title,
+        description: input.description,
+      };
+    }),
 
   createIdeaFromDescription: privateProcedure
     .input(
@@ -55,6 +78,7 @@ export const ideaRouter = createTRPCRouter({
 
       return {
         title: input.title,
+        description: input.description,
         id,
       };
     }),

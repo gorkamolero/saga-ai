@@ -10,15 +10,28 @@ import {
 } from '@/server/db/schema';
 import { count, eq } from 'drizzle-orm';
 import { profileSchema } from '@/lib/validators/profile';
+import { createInsertSchema } from 'drizzle-zod';
 
 export type ProfileInput = z.infer<typeof profileSchema>;
+const setInput = createInsertSchema(users).partial();
 
 export const userRouter = createTRPCRouter({
   get: privateProcedure.query(async ({ ctx }) => {
-    const profile = await ctx.db.query.users.findFirst({
+    const user = await ctx.db.query.users.findFirst({
       where: eq(users.id, ctx.user.id),
+      with: {
+        currentConversation: true,
+      },
     });
-    return profile;
+    return user;
+  }),
+  set: privateProcedure.input(setInput).mutation(async ({ ctx, input }) => {
+    const user = await ctx.db
+      .update(users)
+      .set({ ...input })
+      .where(eq(users.id, ctx.user.id))
+      .returning();
+    return user[0];
   }),
   createProfile: privateProcedure
     .input(profileSchema)
@@ -48,16 +61,6 @@ export const userRouter = createTRPCRouter({
 
       return user;
     }),
-  getFullUser: privateProcedure.query(async ({ ctx }) => {
-    const user = await ctx.db.query.users.findFirst({
-      where: eq(users.id, ctx.user.id),
-      with: {
-        ideas: true,
-      },
-    });
-
-    return user;
-  }),
 
   getUserWithInnerCount: privateProcedure.query(async ({ ctx }) => {
     const user = await ctx.db.query.users.findFirst({

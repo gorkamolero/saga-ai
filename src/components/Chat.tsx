@@ -33,13 +33,15 @@ export function Chat() {
             <EmptyScreen
               submitMessage={async (message) => {
                 // Add user message UI
-                setMessages((currentMessages) => [
-                  ...currentMessages,
-                  {
-                    id: Date.now(),
-                    display: <UserMessage>{message}</UserMessage>,
-                  },
-                ]);
+                setMessages((currentMessages) => {
+                  return [
+                    ...currentMessages,
+                    {
+                      id: Date.now(),
+                      display: <UserMessage>{message}</UserMessage>,
+                    },
+                  ];
+                });
 
                 // Submit and get response message
                 const responseMessage = await submitUserMessage(message);
@@ -52,6 +54,8 @@ export function Chat() {
           ) : (
             <ChatList messages={messages} />
           )}
+
+          {/* <ScriptWriter /> */}
 
           <ChatScrollAnchor trackVisibility />
         </div>

@@ -2,6 +2,10 @@ import { createTRPCRouter } from '@/server/api/trpc';
 import { userRouter } from './routers/users';
 import { ideaRouter } from './routers/ideas';
 import { writerRouter } from './routers/writers';
+import { scriptRouter } from './routers/scripts';
+import { voiceoverRouter } from './routers/voiceovers';
+import { videoRouter } from './routers/videos';
+import { conversationRouter } from './routers/conversations';
 
 /**
  * This is the primary router for your server.
@@ -10,8 +14,12 @@ import { writerRouter } from './routers/writers';
  */
 export const appRouter = createTRPCRouter({
   users: userRouter,
+  conversations: conversationRouter,
   ideas: ideaRouter,
   writers: writerRouter,
+  scripts: scriptRouter,
+  voiceovers: voiceoverRouter,
+  videos: videoRouter,
 });
 
 // export type definition of API

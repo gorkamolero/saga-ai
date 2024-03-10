@@ -14,6 +14,20 @@ export const writerRouter = createTRPCRouter({
     return getwriters;
   }),
 
+  getWriter: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      if (!input || !input?.id) throw new Error('No id provided');
+      const writer = await ctx.db.query.writers.findFirst({
+        where: eq(writers.id, input.id),
+      });
+      return writer;
+    }),
+
   createWriter: privateProcedure
     .input(
       z.object({
@@ -21,11 +35,14 @@ export const writerRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const createwriter = await ctx.db.insert(writers).values({
-        id: v4(),
-        userId: ctx.user.id,
-        style: input.style,
-      });
-      return createwriter;
+      const createwriter = await ctx.db
+        .insert(writers)
+        .values({
+          id: v4(),
+          userId: ctx.user.id,
+          style: input.style,
+        })
+        .returning();
+      return createwriter[0];
     }),
 });

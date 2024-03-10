@@ -34,7 +34,35 @@ export const users = createTable('user', {
   bio: varchar('bio', { length: 180 }),
   x_handle: varchar('x_handle', { length: 120 }),
   website: varchar('website', { length: 120 }),
+  currentConversationId: uuid('current_conversation_id'),
 });
+
+export const conversations = createTable('conversations', {
+  id: uuid('id').primaryKey(),
+  userId: uuid('user_id').references(() => users.id),
+  messages: jsonb('messages'),
+  ideaId: uuid('idea_id').references(() => ideas.id),
+  writerId: uuid('writer_id').references(() => writers.id),
+  scriptId: uuid('script_id').references(() => scripts.id),
+  voiceoverId: uuid('voiceover_id').references(() => voiceovers.id),
+  videoId: uuid('video_id').references(() => videos.id),
+});
+
+export const userRelations = relations(users, ({ one, many }) => ({
+  conversations: many(conversations),
+  currentConversation: one(conversations, {
+    fields: [users.currentConversationId],
+    references: [conversations.id],
+  }),
+}));
+
+export const conversationRelations = relations(conversations, ({ one }) => ({
+  user: one(users),
+  idea: one(ideas),
+  writer: one(writers),
+  script: one(scripts),
+  voiceover: one(voiceovers),
+}));
 
 export const ideas = createTable('ideas', {
   id: uuid('id').primaryKey(),
@@ -126,9 +154,9 @@ export const visualAssets = createTable('visual_assets', {
 export const videos = createTable('videos', {
   id: uuid('id').primaryKey(),
   userId: uuid('user_id').references(() => users.id),
-  url: text('url').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  url: text('url'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
   description: text('description').notNull(),
   rendered: boolean('rendered').default(false),
   uploaded: boolean('uploaded').default(false),

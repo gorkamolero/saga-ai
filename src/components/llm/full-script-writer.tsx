@@ -5,7 +5,7 @@ import { api } from '@/trpc/react';
 import { Button } from '../ui/button';
 import { useActions, useUIState } from 'ai/rsc';
 import { AI } from '@/app/action';
-import { ContentCard } from '../ContentCard';
+import { ContentCard } from '../content-card';
 import { LoadingSpinner } from '../ui/spinner';
 import { cn } from '@/lib/utils';
 
@@ -46,8 +46,8 @@ export const ScriptWriter = () => {
         </div>
       ) : (
         <>
-          <div className="relative flex h-[36rem] w-full flex-col items-end justify-end overflow-hidden">
-            <div className="absolute top-0 flex w-full space-x-8 overflow-x-auto whitespace-nowrap p-8 ">
+          <div className="relative flex h-[42rem] w-full flex-col items-end justify-end overflow-hidden">
+            <div className="absolute top-0 mb-24 flex w-full space-x-8 overflow-x-auto whitespace-nowrap p-8">
               {ideas.map((idea) => (
                 <label key={idea.id} className="flex-shrink-0 cursor-pointer">
                   <input
@@ -70,7 +70,7 @@ export const ScriptWriter = () => {
                 </label>
               ))}
             </div>
-            <div className="mx-auto w-full max-w-md pb-8">
+            <div className="mx-auto mt-4 w-full max-w-md pb-8">
               <div className="flex items-end justify-end  p-8">
                 <Button
                   size="lg"
@@ -89,6 +89,7 @@ export const ScriptWriter = () => {
                       response.newMessage,
                     ]);
                   }}
+                  className="relative z-40"
                 >
                   Create Script
                 </Button>
