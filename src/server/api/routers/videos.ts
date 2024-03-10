@@ -1,78 +1,135 @@
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { conversations, scripts, users, videos } from '@/server/db/schema';
+import {
+  conversations,
+  ideas,
+  scripts,
+  users,
+  videos,
+} from '@/server/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
-import { v4 } from 'uuid';
-import { createClient } from '@/utils/supabase/server';
-import { cookies } from 'next/headers';
-import generateTranscript from '@/lib/ai/generateTranscript';
-import { remapTranscript } from '@/lib/utils';
-import { VOICEMODELS } from '@/lib/validators/voicemodel';
-import { Transcript } from 'assemblyai';
 
-const videoSchema = createInsertSchema(videos).partial();
+export const videoSchema = createInsertSchema({
+  ...videos,
+  visualAssets: z.array(z.string()),
+}).partial();
+export type VideoType = z.infer<typeof videoSchema>;
 
 export const videoRouter = createTRPCRouter({
-  get: privateProcedure.query(async ({ ctx }) => {
+  getAll: privateProcedure.query(async ({ ctx }) => {
     const getvideos = await ctx.db.query.videos.findMany({
       where: eq(videos.userId, ctx.user.id),
     });
     return getvideos;
   }),
 
-  create: privateProcedure.mutation(async ({ ctx, input }) => {
-    const userId = ctx.user.id as string;
-    const user = await ctx.db.query.users.findFirst({
-      where: eq(users.id, userId),
-    });
+  get: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const getvideo = await ctx.db.query.videos.findFirst({
+        where: eq(videos.id, input.id),
+        with: {
+          visualAssets: true,
+        },
+      });
+      return getvideo;
+    }),
 
-    if (!user) throw new Error('User not found');
-    if (!user.currentConversationId)
-      throw new Error('User has no conversation');
+  getFull: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const getvideo = await ctx.db.query.videos.findFirst({
+        where: eq(videos.id, input.id),
+        with: {
+          visualAssets: true,
+          voiceover: true,
+          script: true,
+        },
+      });
+      return {
+        ...getvideo,
+        script: getvideo?.script?.content || '',
+      };
+    }),
 
-    const conversation = await ctx.db.query.conversations.findFirst({
-      where: and(
-        eq(conversations.id, user?.currentConversationId),
-        eq(conversations.userId, userId),
-      ),
-      with: {
-        idea: true,
-      },
-    });
+  create: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.user.id as string;
+      const user = await ctx.db.query.users.findFirst({
+        where: eq(users.id, userId),
+      });
 
-    if (!conversation) throw new Error('Conversation not found');
-    if (!conversation.idea) throw new Error('Idea not found');
+      if (!user) throw new Error('User not found');
+      if (!user.currentConversationId)
+        throw new Error('User has no conversation');
 
-    const {
-      ideaId,
-      writerId,
-      scriptId,
-      voiceoverId,
-      idea: { description },
-    } = conversation;
+      const id = input?.id;
 
-    if (!ideaId || !writerId || !scriptId || !voiceoverId || !description) {
-      throw new Error('Conversation is missing required data');
-    }
+      const conversation = await ctx.db.query.conversations.findFirst({
+        where: eq(conversations.id, user?.currentConversationId),
+      });
 
-    const id = v4();
+      if (!conversation) throw new Error('Conversation not found');
+      if (!conversation.ideaId) throw new Error('Idea not found');
 
-    const videoResult = await ctx.db
-      .insert(videos)
-      .values({
-        id,
-        userId,
-        ideaId,
-        writerId,
-        scriptId,
-        voiceoverId,
-        description,
-      })
-      .returning();
+      const idea = await ctx.db.query.ideas.findFirst({
+        where: eq(ideas.id, conversation?.ideaId),
+      });
 
-    return videoResult[0];
-  }),
+      const { ideaId, writerId, scriptId, voiceoverId } = conversation;
+
+      if (
+        !ideaId ||
+        !writerId ||
+        !scriptId ||
+        !voiceoverId ||
+        !idea ||
+        !idea?.description
+      ) {
+        throw new Error('Conversation is missing required data');
+      }
+
+      const voiceover = await ctx.db.query.voiceovers.findFirst({
+        where: eq(videos.id, voiceoverId),
+      });
+
+      const duration = voiceover?.duration || 0;
+
+      const videoResult = await ctx.db
+        .insert(videos)
+        .values({
+          id,
+          userId,
+          ideaId,
+          writerId,
+          scriptId,
+          voiceoverId,
+          description: idea.description,
+          duration: duration || 0,
+        })
+        .returning();
+
+      await ctx.db
+        .update(conversations)
+        .set({ videoId: id })
+        .where(eq(conversations.id, user.currentConversationId));
+
+      return videoResult[0];
+    }),
 
   update: privateProcedure
     .input(

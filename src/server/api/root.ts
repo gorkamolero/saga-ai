@@ -6,6 +6,7 @@ import { scriptRouter } from './routers/scripts';
 import { voiceoverRouter } from './routers/voiceovers';
 import { videoRouter } from './routers/videos';
 import { conversationRouter } from './routers/conversations';
+import { visualAssetRouter } from './routers/assets';
 
 /**
  * This is the primary router for your server.
@@ -20,6 +21,7 @@ export const appRouter = createTRPCRouter({
   scripts: scriptRouter,
   voiceovers: voiceoverRouter,
   videos: videoRouter,
+  assets: visualAssetRouter,
 });
 
 // export type definition of API

@@ -5,7 +5,13 @@ import { api } from '@/trpc/react';
 import { redirect } from 'next/navigation';
 import { AiMessage } from '../ui/ai-message';
 
-export const VoiceoverResult = ({ url }: { url: string | undefined }) => {
+export const VoiceoverResult = ({
+  url,
+  conversationId,
+}: {
+  url: string | undefined;
+  conversationId: string;
+}) => {
   const {
     mutate: createVideo,
     data,
@@ -17,7 +23,9 @@ export const VoiceoverResult = ({ url }: { url: string | undefined }) => {
 
   const handleSaveVideo = async (e: React.MouseEvent<HTMLButtonElement>) => {
     try {
-      await createVideo();
+      await createVideo({
+        id: conversationId,
+      });
       if (data) {
         await updateCurrentConversation({ videoId: data.id });
         redirect(`/videos/${data.id}`);

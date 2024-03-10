@@ -14,7 +14,6 @@ import { ChatCompletionUserMessageParam } from 'openai/resources/index.mjs';
 import { scriptwriter } from '@/lib/prompts/scriptwriter';
 import { ScriptForm } from '@/components/script-form';
 import { ContentCard } from '@/components/content-card';
-import { Separator } from '@/components/ui/separator';
 import { VoiceoverResult } from '@/components/llm/voiceover-result';
 import { v4 } from 'uuid';
 
@@ -67,7 +66,7 @@ Messages inside [] means that it's a UI element or a user event. For example:
 
 If the user has an idea, make sure they provided a short description and call the "display_idea" function to allow them to save it
 
-If the user wants to write the script and you haven't been provided a style, you need to define a style for it and agree with the user. Ask them and call the "define_style" function to allow them to save it, then call the "write_script" function to allow them to save it, and this is how you do it: ${scriptwriter}
+If the user wants to write the script and you haven't been provided a style, you need to define a style for it yourself and propose it and agree with the user. Ask them and call the "define_style" function to allow them to save it, then call the "write_script" function to allow them to save it, and this is how you do it: ${scriptwriter}
 
 If the user wants to define the style for the script, call the "define_style" function to allow them to save it
 
@@ -193,8 +192,25 @@ Besides that, you can also chat with users and help him develop his ideas if nee
   });
 
   completion.onFunctionCall('define_style', async ({ style }) => {
-    const createWriter = await api.writers.createWriter.mutate({
+    const createWriter = await api.writers.create.mutate({
+      id: conversationId,
       style,
+    });
+
+    if (!createWriter || !('id' in createWriter)) {
+      reply.done(
+        <AiMessage>
+          <p>
+            Sorry, I couldn't create a writer with the style {style}. Would you
+            like to try again?
+          </p>
+        </AiMessage>,
+      );
+      return;
+    }
+
+    await api.conversations.updateCurrent.mutate({
+      writerId: createWriter.id,
     });
 
     if (!createWriter || !('id' in createWriter)) {
@@ -211,18 +227,13 @@ Besides that, you can also chat with users and help him develop his ideas if nee
 
     const { id } = createWriter;
 
-    await api.conversations.set.mutate({
-      id: conversationId,
+    await api.conversations.updateCurrent.mutate({
       writerId: id,
     });
 
     reply.done(
       <AiMessage>
-        <p>We'll need to define the style first. I tought of:</p>
-        <p className="text-xs">{style}</p>
-        <p>Is that good? (TODO: Make editable)</p>
-        <Separator />
-        <p>Would you like to generate the script now?</p>
+        <p>{style} - Great. Would you like to generate the script now?</p>
       </AiMessage>,
     );
 
@@ -251,7 +262,9 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         <ContentCard
           className="max-w-128 w-full"
           title={title}
-          description={<ScriptForm title={title} script={script} />}
+          description={
+            <ScriptForm title={title} script={script} id={conversationId} />
+          }
           hoverFx={false}
         />
         <AiMessage>
@@ -284,11 +297,14 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         </AiMessage>,
       );
 
-      const result = await api.voiceovers.createVoiceover.mutate({
+      const result = await api.voiceovers.create.mutate({
+        id: conversationId,
         scriptId,
         script,
         voicemodel: 'onyx',
       });
+
+      // TODO: SPLIT INTO TWO, TRANSCRIPTION AND VOICEOVER
 
       if (!result || !result.id || !result.url) {
         reply.update(
@@ -308,7 +324,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
 
       reply.done(
         <>
-          <VoiceoverResult url={result?.url} />
+          <VoiceoverResult url={result?.url} conversationId={conversationId} />
         </>,
       );
 

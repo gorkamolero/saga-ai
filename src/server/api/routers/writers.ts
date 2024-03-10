@@ -28,17 +28,19 @@ export const writerRouter = createTRPCRouter({
       return writer;
     }),
 
-  createWriter: privateProcedure
+  create: privateProcedure
     .input(
       z.object({
+        id: z.string(),
         style: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (!input || !input?.id) throw new Error('No id provided');
       const createwriter = await ctx.db
         .insert(writers)
         .values({
-          id: v4(),
+          id: input.id,
           userId: ctx.user.id,
           style: input.style,
         })

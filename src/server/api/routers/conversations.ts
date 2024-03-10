@@ -30,8 +30,9 @@ export const conversationRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       if (!input || !input?.id) throw new Error('No id provided');
+      const id = input.id;
       const conversation = await ctx.db.query.conversations.findFirst({
-        where: eq(conversations.id, input.id),
+        where: eq(conversations.id, id),
       });
 
       if (!!conversation) {
@@ -64,6 +65,7 @@ export const conversationRouter = createTRPCRouter({
       const createconversation = await ctx.db
         .insert(conversations)
         .values({
+          userId: ctx.user.id,
           id: input.id,
         })
         .returning();
@@ -80,6 +82,8 @@ export const conversationRouter = createTRPCRouter({
       if (!user) throw new Error('No user found');
       if (!user.currentConversationId)
         throw new Error('No current conversation found');
+
+      console.log('Conversation update!', input);
 
       await ctx.db
         .update(conversations)

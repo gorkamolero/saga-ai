@@ -1,0 +1,56 @@
+
+/*
+pattern
+string
+Pattern for the animation. Must be comma-separated list of floats enclosed in curly braces.
+
+animationLength
+number [ 1 .. 6 ]
+Duration of the animation. This controls how fast or slow the animation should be. For example, a value of 1 would create the fastest and 6 would create the slowest animations.
+
+amplitudeX
+number [ 0 .. 10 ]
+Amount of motion in X axis.
+
+amplitudeY
+number [ 0 .. 10 ]
+Amount of motion in Y axis.
+
+amplitudeZ
+number [ 0 .. 10 ]
+Amount of motion in Z axis.
+
+phaseX
+number [ 0 .. 7 ]
+The starting point or offset of the motion in the x-axis. For example, a phase value of 0 indicates that the motion starts from the origin.
+
+phaseY
+number [ 0 .. 7 ]
+The starting point or offset of the motion in the Y-axis. For example, a phase value of 0 indicates that the motion starts from the origin.
+
+phaseZ
+number [ 0 .. 7 ]
+The starting point or offset of the motion in the Z-axis. For example, a phase value of 0 indicates that the motion starts from the origin.
+
+gain
+number [ 0 .. 10 ]
+Floating point gain value
+
+convergence
+number [ -1 .. 1 ]
+A floating point number that specifies the convergence between -1 to 1.
+
+
+Effects to achieve:
+Horizontal
+phaseX = 1, phaseY = 0, phaseZ = 0, amplitudeX = 0.0, amplitudeY = 0.25, amplitudeZ = 0.25
+
+Circle
+phaseX = 1, phaseY = 1, phaseZ = 0, amplitudeX = 0.0, amplitudeY = 0.25, amplitudeZ = 0.25   
+        
+Vertical
+phaseX = 0, phaseY = 1, phaseZ = 0, amplitudeX = 0.0, amplitudeY = 0.25, amplitudeZ = 0.25    
+
+Perspective
+phaseX = 1, phaseY = 0.25, phaseZ = 1, amplitudeX = 0.0, amplitudeY = 0.25, amplitudeZ = 0.25
+*/

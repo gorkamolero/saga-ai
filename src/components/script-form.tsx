@@ -1,22 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { useAIState, useActions, useUIState } from 'ai/rsc';
+import { useAIState, useUIState } from 'ai/rsc';
 import { Textarea } from './ui/textarea';
 import { TextGenerateEffect } from './ui/text-generate-fx';
 import { Button } from './ui/button';
 import { Edit, Lock, Save } from 'lucide-react';
 import { api } from '@/trpc/react';
-import { v4 } from 'uuid';
 import { AI } from '@/app/action';
 import { AiMessage } from './ui/ai-message';
 
 export const ScriptForm = ({
   script: initialScript,
   title,
+  id,
 }: {
   script: string;
   title: string;
+  id: string;
 }) => {
   const [editMode, setEditMode] = useState(false);
   const [script, setScript] = useState<string | null>(initialScript);
@@ -35,7 +36,6 @@ export const ScriptForm = ({
   };
 
   const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    const id = v4() as string;
     if (script) {
       try {
         await saveScript({ id, script });

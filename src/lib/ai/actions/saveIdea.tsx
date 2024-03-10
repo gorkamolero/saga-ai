@@ -4,7 +4,6 @@ import { getMutableAIState } from 'ai/rsc';
 import { AiMessage } from '@/components/ui/ai-message';
 import { ContentCard } from '@/components/content-card';
 import { AI } from '../../../app/action';
-import { v4 } from 'uuid';
 import { api } from '@/trpc/server';
 
 const nextActions = [`Let's generate a script`];
@@ -21,11 +20,15 @@ export async function saveIdea({
   'use server';
   const aiState = getMutableAIState<typeof AI>();
 
-  const id = v4();
+  const id = conversationId;
 
   const ideaUI = (
     <>
-      <ContentCard title={title} description={description} />
+      <ContentCard
+        className="max-w-128"
+        title={title}
+        description={description}
+      />
     </>
   );
 
@@ -41,8 +44,7 @@ export async function saveIdea({
     description,
   });
 
-  await api.conversations.set.mutate({
-    id: conversationId,
+  await api.conversations.updateCurrent.mutate({
     ideaId: id,
   });
 

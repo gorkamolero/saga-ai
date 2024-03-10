@@ -2,7 +2,7 @@ import { z } from 'zod';
 // import { v4 as uuid } from "uuid";
 
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { scripts } from '@/server/db/schema';
+import { conversations, scripts, users } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 
 const updateScriptSchema = z.object({
@@ -54,6 +54,21 @@ export const scriptRouter = createTRPCRouter({
         return updatedScript[0];
       }
 
+      const userId = ctx.user.id as string;
+      const user = await ctx.db.query.users.findFirst({
+        where: eq(users.id, userId),
+      });
+      const currentConversationId = user?.currentConversationId;
+      if (!currentConversationId) throw new Error('User has no conversation');
+      const conversation = await ctx.db.query.conversations.findFirst({
+        where: eq(conversations.id, currentConversationId),
+      });
+      const ideaId = conversation?.ideaId;
+      if (!ideaId) throw new Error('Idea not found');
+
+      const writerId = conversation?.writerId;
+      if (!writerId) throw new Error('Writer not found');
+
       const createscript = await ctx.db
         .insert(scripts)
         .values({
@@ -61,6 +76,8 @@ export const scriptRouter = createTRPCRouter({
           content,
           wordCount,
           userId: ctx.user.id,
+          ideaId,
+          writerId,
         })
         .returning();
       return createscript[0];

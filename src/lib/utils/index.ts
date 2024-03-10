@@ -1,14 +1,14 @@
 import {
   TAnyToolDefinitionArray,
   TToolDefinitionMap,
-} from "@/lib/utils/tool-definition";
-import { OpenAIStream } from "ai";
-import type OpenAI from "openai";
-import zodToJsonSchema from "zod-to-json-schema";
-import { z } from "zod";
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { Transcript } from "assemblyai";
+} from '@/lib/utils/tool-definition';
+import { OpenAIStream } from 'ai';
+import type OpenAI from 'openai';
+import zodToJsonSchema from 'zod-to-json-schema';
+import { z } from 'zod';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { Transcript } from 'assemblyai';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -46,7 +46,7 @@ const consumeStream = async (stream: ReadableStream) => {
 export function runOpenAICompletion<
   T extends Omit<
     Parameters<typeof OpenAI.prototype.chat.completions.create>[0],
-    "functions"
+    'functions'
   >,
   const TFunctions extends TAnyToolDefinitionArray,
 >(
@@ -55,7 +55,7 @@ export function runOpenAICompletion<
     functions: TFunctions;
   },
 ) {
-  let text = "";
+  let text = '';
   let hasFunction = false;
 
   type TToolMap = TToolDefinitionMap<TFunctions>;
@@ -116,7 +116,7 @@ export function runOpenAICompletion<
           },
           onToken(token) {
             text += token;
-            if (text.startsWith("{")) return;
+            if (text.startsWith('{')) return;
             onTextContent(text, false);
           },
           onFinal() {
@@ -134,14 +134,14 @@ export function runOpenAICompletion<
     ) => {
       onTextContent = callback;
     },
-    onFunctionCall: <TName extends TFunctions[number]["name"]>(
+    onFunctionCall: <TName extends TFunctions[number]['name']>(
       name: TName,
       callback: (
         args: z.output<
           TName extends keyof TToolMap
             ? TToolMap[TName] extends infer TToolDef
               ? TToolDef extends TAnyToolDefinitionArray[number]
-                ? TToolDef["parameters"]
+                ? TToolDef['parameters']
                 : never
               : never
             : never
@@ -154,9 +154,9 @@ export function runOpenAICompletion<
 }
 
 export const formatNumber = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
   }).format(value);
 
 export const runAsyncFnWithoutBlocking = (
@@ -176,3 +176,9 @@ export function getStockPrice(name: string) {
   }
   return total / 100;
 }
+
+export const formatTime = (time: number) => {
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+};

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { voiceovers } from '@/server/db/schema';
+import { videos, voiceovers } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
 import { createClient } from '@/utils/supabase/server';
@@ -10,6 +10,10 @@ import generateTranscript from '@/lib/ai/generateTranscript';
 import { remapTranscript } from '@/lib/utils';
 import { VOICEMODELS } from '@/lib/validators/voicemodel';
 import { Transcript } from 'assemblyai';
+import { createInsertSchema } from 'drizzle-zod';
+
+export const voiceoverSchema = createInsertSchema(voiceovers).partial();
+export type VoiceoverType = z.infer<typeof voiceoverSchema>;
 
 export const voiceoverRouter = createTRPCRouter({
   getVoiceovers: privateProcedure.query(async ({ ctx }) => {
@@ -19,18 +23,20 @@ export const voiceoverRouter = createTRPCRouter({
     return getvoiceovers;
   }),
 
-  createVoiceover: privateProcedure
+  create: privateProcedure
     .input(
       z.object({
         script: z.string(),
         scriptId: z.string(),
         voicemodel: z.string(),
+        id: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
       const voicemodel = input.voicemodel as VOICEMODELS;
-      const id = v4();
+      if (!input.id) throw new Error('No id provided');
+      const id = input.id;
       const voiceover = await generateVoiceover({
         script: input.script,
         voicemodel,
@@ -53,10 +59,11 @@ export const voiceoverRouter = createTRPCRouter({
         data: { publicUrl: voiceoverUrl },
       } = supabase.storage.from('voiceovers').getPublicUrl(vurl);
 
-      const fullTranscript = await generateTranscript({
+      const fullTranscript = (await generateTranscript({
         voiceoverUrl,
-      });
-      const transcript = remapTranscript(fullTranscript as Transcript);
+      })) as Transcript;
+      const transcript = remapTranscript(fullTranscript);
+      const duration = fullTranscript.audio_duration || 0;
 
       const voiceoverResult = await ctx.db
         .insert(voiceovers)
@@ -67,6 +74,7 @@ export const voiceoverRouter = createTRPCRouter({
           url: voiceoverUrl,
           transcript,
           voicemodel,
+          duration,
         })
         .returning();
 

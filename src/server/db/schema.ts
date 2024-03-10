@@ -12,7 +12,6 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { z } from 'zod';
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -107,23 +106,27 @@ export const scripts = createTable('scripts', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   writerId: uuid('writer_id').references(() => writers.id),
+  videoId: uuid('video_id'),
 });
 
 export const scriptRelations = relations(scripts, ({ one, many }) => ({
   writers: one(writers),
+  videos: one(videos),
 }));
 
 export const voiceovers = createTable('voiceovers', {
   id: uuid('id').primaryKey(),
   userId: uuid('user_id').references(() => users.id),
   scriptId: uuid('script_id').references(() => scripts.id),
-  transcript: jsonb('words').notNull(),
+  transcript: jsonb('transcript').notNull(),
   url: text('url').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-  voicemodel: varchar('voiceover', {
+  voicemodel: varchar('voicemodel', {
     length: 16,
   }),
+  duration: integer('duration').default(0),
+  videoId: uuid('video_id'),
 });
 
 export const visualAssets = createTable('visual_assets', {
@@ -132,23 +135,29 @@ export const visualAssets = createTable('visual_assets', {
   type: varchar('type', {
     length: 20,
   }),
-  description: varchar('prompt', {
+  description: varchar('description', {
     length: 480,
   }),
   artistId: uuid('artist_id').references(() => artists.id),
   scriptId: uuid('script_id').references(() => scripts.id),
   url: text('url'),
-  start: integer('position'),
-  end: integer('position'),
+  start: integer('start'),
+  end: integer('end'),
   fx: varchar('fx', {
     length: 20,
   }),
   transition: varchar('transition', {
     length: 20,
   }),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
   videoId: uuid('video_id').references(() => videos.id),
+  generated: boolean('generated').default(false),
+  generatedAt: timestamp('generated_at'),
+  disparityUrl: text('disparity_url'),
+  animation: text('animation'),
+  animatedAt: timestamp('animated_at'),
+  index: integer('index'),
 });
 
 export const videos = createTable('videos', {
@@ -165,13 +174,31 @@ export const videos = createTable('videos', {
   artistId: uuid('artist_id').references(() => artists.id),
   scriptId: uuid('script_id').references(() => scripts.id),
   voiceoverId: uuid('voiceover_id').references(() => voiceovers.id),
+  duration: integer('duration').default(0),
 });
 
 export const videoRelations = relations(videos, ({ one, many }) => ({
   ideas: one(ideas),
-  writers: one(writers),
-  artists: one(artists),
-  scripts: one(scripts),
-  voiceovers: one(voiceovers),
+  writer: one(writers),
+  artist: one(artists),
+  script: one(scripts, {
+    fields: [videos.scriptId],
+    references: [scripts.id],
+  }),
+  voiceover: one(voiceovers, {
+    fields: [videos.voiceoverId],
+    references: [voiceovers.id],
+  }),
   visualAssets: many(visualAssets),
+}));
+
+export const voiceoverRelations = relations(voiceovers, ({ one }) => ({
+  video: one(videos),
+}));
+
+export const visualAssetRelations = relations(visualAssets, ({ one }) => ({
+  videos: one(videos, {
+    fields: [visualAssets.videoId],
+    references: [videos.id],
+  }),
 }));
