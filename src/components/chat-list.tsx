@@ -1,3 +1,5 @@
+import { ChatScrollAnchor } from '@/lib/hooks/chat-scroll-anchor';
+
 export function ChatList({ messages }: { messages: any[] }) {
   if (!messages.length) {
     return null;
@@ -15,6 +17,7 @@ export function ChatList({ messages }: { messages: any[] }) {
           {message.display}
         </li>
       ))}
+      <ChatScrollAnchor trackVisibility />
     </ul>
   );
 }

@@ -180,8 +180,8 @@ export const getDurationInFrames = (
   fps: number,
   isLast: boolean,
 ) => {
-  const start = image.start! / 1000;
-  const end = isLast ? image.end! + 2 / 1000 : image.end! / 1000;
+  const start = image.start!;
+  const end = isLast ? image.end! + 2 : image.end! + 1;
   return Math.round((end - start) * fps) + fps;
 };
 

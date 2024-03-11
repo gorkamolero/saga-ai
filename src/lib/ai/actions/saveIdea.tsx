@@ -44,10 +44,6 @@ export async function saveIdea({
     description,
   });
 
-  await api.conversations.updateCurrent.mutate({
-    ideaId: id,
-  });
-
   aiState.done([
     ...aiState.get(),
     {
@@ -59,6 +55,21 @@ export async function saveIdea({
       content: `Congratulations! Your idea "${title}" has been saved successfully. Do you want to create a script for it?`,
     },
   ]);
+
+  await api.conversations.updateCurrent.mutate({
+    ideaId: id,
+    aiState: [
+      ...aiState.get(),
+      {
+        role: 'system',
+        content: `[The user has saved a new idea with title "${title}" and description "${description}" with id: ${id}]. If the user asks about this idea, you can tell him any information about it.`,
+      },
+      {
+        role: 'assistant',
+        content: `Congratulations! Your idea "${title}" has been saved successfully. Do you want to create a script for it?`,
+      },
+    ],
+  });
 
   return {
     ideaUI,

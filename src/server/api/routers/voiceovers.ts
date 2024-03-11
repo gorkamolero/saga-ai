@@ -49,6 +49,8 @@ export const voiceoverRouter = createTRPCRouter({
         .from('voiceovers')
         .upload(vurl, voiceover, {
           contentType: 'audio/mpeg',
+          upsert: true,
+          cacheControl: '3600',
         });
 
       if (voiceoverUploadResult.error) {
@@ -59,25 +61,56 @@ export const voiceoverRouter = createTRPCRouter({
         data: { publicUrl: voiceoverUrl },
       } = supabase.storage.from('voiceovers').getPublicUrl(vurl);
 
-      const fullTranscript = (await generateTranscript({
-        voiceoverUrl,
-      })) as Transcript;
-      const transcript = remapTranscript(fullTranscript);
-      const duration = fullTranscript.audio_duration || 0;
-
-      const voiceoverResult = await ctx.db
+      const voiceOverResult = await ctx.db
         .insert(voiceovers)
         .values({
           id,
           userId,
           scriptId: input.scriptId,
           url: voiceoverUrl,
-          transcript,
           voicemodel,
+        })
+        .onConflictDoUpdate({
+          target: voiceovers.id,
+          set: {
+            url: voiceoverUrl,
+          },
+        })
+        .returning({
+          id: voiceovers.id,
+          url: voiceovers.url,
+          duration: voiceovers.duration,
+        });
+
+      return voiceOverResult[0];
+    }),
+
+  transcribe: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        url: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const id = input.id;
+      const url = input.url as string;
+
+      const fullTranscript = (await generateTranscript({
+        voiceoverUrl: url,
+      })) as Transcript;
+      const transcript = remapTranscript(fullTranscript);
+      const duration = fullTranscript.audio_duration || 0;
+
+      await ctx.db
+        .update(voiceovers)
+        .set({
+          id,
+          transcript,
           duration,
         })
-        .returning();
+        .where(eq(voiceovers.id, id));
 
-      return voiceoverResult[0];
+      return transcript;
     }),
 });

@@ -26,10 +26,11 @@ export function capitalizeFirstLetter(inputString: string) {
 export const remapTranscript = (transcript: Transcript) => {
   return {
     audioUrl: transcript.audio_url,
-    words: transcript.words?.map((w) => ({
+    words: transcript.words?.map((w, i) => ({
       start: w.start,
       end: w.end,
       text: w.text,
+      index: i,
     })),
     duration: transcript.audio_duration,
   };

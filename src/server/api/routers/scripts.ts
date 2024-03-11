@@ -63,10 +63,10 @@ export const scriptRouter = createTRPCRouter({
       const conversation = await ctx.db.query.conversations.findFirst({
         where: eq(conversations.id, currentConversationId),
       });
-      const ideaId = conversation?.ideaId;
+      const ideaId = conversation?.ideaId || conversation?.id;
       if (!ideaId) throw new Error('Idea not found');
 
-      const writerId = conversation?.writerId;
+      const writerId = conversation?.writerId || conversation?.id;
       if (!writerId) throw new Error('Writer not found');
 
       const createscript = await ctx.db
@@ -80,6 +80,11 @@ export const scriptRouter = createTRPCRouter({
           writerId,
         })
         .returning();
+
+      await ctx.db
+        .update(conversations)
+        .set({ scriptId: input.id })
+        .where(eq(conversations.id, currentConversationId));
       return createscript[0];
     }),
 

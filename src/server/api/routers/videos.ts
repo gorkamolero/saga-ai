@@ -109,7 +109,7 @@ export const videoRouter = createTRPCRouter({
 
       const duration = voiceover?.duration || 0;
 
-      const videoResult = await ctx.db
+      await ctx.db
         .insert(videos)
         .values({
           id,
@@ -121,6 +121,7 @@ export const videoRouter = createTRPCRouter({
           description: idea.description,
           duration: duration || 0,
         })
+        .onConflictDoNothing()
         .returning();
 
       await ctx.db
@@ -128,7 +129,9 @@ export const videoRouter = createTRPCRouter({
         .set({ videoId: id })
         .where(eq(conversations.id, user.currentConversationId));
 
-      return videoResult[0];
+      return {
+        id,
+      };
     }),
 
   update: privateProcedure

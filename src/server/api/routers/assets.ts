@@ -1,13 +1,11 @@
 import { z } from 'zod';
-// import { v4 as uuid } from "uuid";
-
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { videos, visualAssets, voiceovers } from '@/server/db/schema';
+import { conversations, videos, visualAssets } from '@/server/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
 import { createInsertSchema } from 'drizzle-zod';
 import { TranscriptType } from '@/lib/validators/transcript';
-import { generateAssets } from '@/lib/ai/generateAssets';
+import { generateAssets, mapNewAssets } from '@/lib/ai/generateAssets';
 import { searchUnsplashPhotos } from '../utils/unsplash';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
@@ -65,17 +63,66 @@ export const visualAssetRouter = createTRPCRouter({
         .where(eq(visualAssets.id, input.id));
       return true;
     }),
+  saveMultiple: privateProcedure
+    .input(
+      z.object({
+        conversationId: z.string(),
+        assets: z.array(visualAssetSchema.partial()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (!input || !input?.assets || input.assets.length === 0)
+        throw new Error('No assets provided');
+
+      if (!input?.conversationId) throw new Error('No conversationId provided');
+
+      const conversation = await ctx.db.query.conversations.findFirst({
+        where: eq(conversations.id, input.conversationId),
+      });
+
+      const userId = ctx.user.id as string;
+      const videoId = conversation?.videoId as string;
+
+      await ctx.db
+        .delete(visualAssets)
+        .where(eq(visualAssets.videoId, videoId));
+
+      const assetsWithIdAndIndex = input.assets
+        .map((asset, index) =>
+          mapNewAssets({
+            ...asset,
+            description: asset.description as string,
+            start: asset.start as number,
+            end: asset.end as number,
+            wordIndex: asset.wordIndex as number,
+            index,
+            userId: userId,
+            videoId: videoId,
+          }),
+        )
+        .map((asset) => ({
+          ...asset,
+          id: v4(),
+        }));
+
+      const assets = await ctx.db
+        .insert(visualAssets)
+        .values(assetsWithIdAndIndex)
+        .returning();
+
+      return assets;
+    }),
 
   generateAssets: privateProcedure
     .input(
       z.object({
-        videoId: z.string(),
+        id: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id as string;
       const video = await ctx.db.query.videos.findFirst({
-        where: eq(videos.id, input.videoId),
+        where: eq(videos.id, input.id),
         with: {
           voiceover: true,
           script: true,
@@ -89,11 +136,22 @@ export const visualAssetRouter = createTRPCRouter({
       const transcript = video?.voiceover?.transcript as TranscriptType;
       const script = video?.script?.content as string;
 
+      const areThereAssets = await ctx.db.query.visualAssets.findMany({
+        where: and(eq(visualAssets.videoId, input.id)),
+      });
+
+      // delete them all
+      if (areThereAssets.length > 0) {
+        await ctx.db
+          .delete(visualAssets)
+          .where(eq(visualAssets.videoId, input.id));
+      }
+
       const assets = (await generateAssets({
         script,
         transcript,
         userId,
-        videoId: input.videoId,
+        videoId: input.id,
       })) as VisualAssetType[];
 
       const assetsWithIdAndIndex = assets.map((asset, index) => ({

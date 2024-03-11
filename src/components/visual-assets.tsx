@@ -34,7 +34,7 @@ export const VisualAssetInterface = ({ video }: { video: FullVideoType }) => {
     e.preventDefault();
     if (!video || !video.id) throw new Error('No video id provided');
 
-    await generateAssets({ videoId: video.id });
+    await generateAssets({ id: video.id });
   };
 
   const addAsset = () => {
@@ -177,9 +177,11 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
 
   if (!assets) return null;
   assets.sort((a, b) => {
-    if (!a.index || !b.index) return 0;
-    return (a.index || 0) > b.index ? 1 : -1;
+    if (!a.start !== undefined || !b.start) return 0;
+    return (a.start || 0) > b.start ? 1 : -1;
   });
+
+  console.log('assets', assets);
 
   return (
     <>

@@ -2,15 +2,15 @@
 
 import { UserMessage } from './ui/user-message';
 import { ChatInput } from './chat-input';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useActions, useUIState } from 'ai/rsc';
 import { AI } from '@/app/action';
 import { EmptyScreen } from './EmptyChatScreen';
-import { ChatScrollAnchor } from '@/lib/hooks/chat-scroll-anchor';
 import { ChatList } from './chat-list';
-import ScriptWriter from './llm/full-script-writer';
+import { useParams } from 'next/navigation';
 
 export function Chat() {
+  const { conversationId } = useParams() as { conversationId: string };
   const scrollRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useUIState<typeof AI>();
   const { submitUserMessage } = useActions<typeof AI>();
@@ -44,7 +44,10 @@ export function Chat() {
                 });
 
                 // Submit and get response message
-                const responseMessage = await submitUserMessage(message);
+                const responseMessage = await submitUserMessage({
+                  message,
+                  conversationId,
+                });
                 setMessages((currentMessages) => [
                   ...currentMessages,
                   responseMessage,
@@ -54,10 +57,6 @@ export function Chat() {
           ) : (
             <ChatList messages={messages} />
           )}
-
-          {/* <ScriptWriter /> */}
-
-          <ChatScrollAnchor trackVisibility />
         </div>
       </div>
 

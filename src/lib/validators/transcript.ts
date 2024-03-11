@@ -6,6 +6,7 @@ export const transcriptSchema = z.object({
       text: z.string(),
       start: z.number(),
       end: z.number(),
+      index: z.number(),
     }),
   ),
 });

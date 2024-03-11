@@ -3,6 +3,8 @@ import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import { conversations, users } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
+import { createClient } from '@/utils/supabase/server';
+import { cookies } from 'next/headers';
 
 const conversationSchema = createInsertSchema(conversations).partial();
 
@@ -72,6 +74,49 @@ export const conversationRouter = createTRPCRouter({
       return createconversation[0];
     }),
 
+  createAndSetInUser: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (!input) throw new Error('No idea id provided');
+      const createconversation = await ctx.db
+        .insert(conversations)
+        .values({
+          userId: ctx.user.id,
+          id: input.id,
+        })
+        .returning();
+      await ctx.db
+        .update(users)
+        .set({ currentConversationId: input.id })
+        .where(eq(users.id, ctx.user.id));
+      return createconversation[0];
+    }),
+
+  recall: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      if (!input || !input?.id) throw new Error('No id provided');
+      const conversation = await ctx.db.query.conversations.findFirst({
+        where: eq(conversations.id, input.id),
+        with: {
+          idea: true,
+          writer: true,
+          script: true,
+          voiceover: true,
+          video: true,
+        },
+      });
+      return conversation;
+    }),
+
   updateCurrent: privateProcedure
     .input(conversationSchema.partial())
     .mutation(async ({ ctx, input }) => {
@@ -83,13 +128,42 @@ export const conversationRouter = createTRPCRouter({
       if (!user.currentConversationId)
         throw new Error('No current conversation found');
 
-      console.log('Conversation update!', input);
-
       await ctx.db
         .update(conversations)
         .set(input)
         .where(eq(conversations.id, user.currentConversationId));
 
       return true;
+    }),
+
+  updateAiState: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        aiState: z.array(z.unknown()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (!input || !input?.id) throw new Error('No id provided');
+      const id = input.id;
+
+      const client = createClient(cookies());
+
+      const aiStateFromInput = Array.isArray(input.aiState)
+        ? input.aiState
+        : [];
+
+      const userId = ctx.user.id as string;
+
+      const aiStateUrl = `${userId}/${id}.json`;
+
+      const { error } = await client.storage
+        .from('aiState')
+        .upload(aiStateUrl, JSON.stringify(aiStateFromInput), {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (error) throw error;
     }),
 });

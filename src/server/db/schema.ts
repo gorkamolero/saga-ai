@@ -4,6 +4,7 @@
 import { relations, sql } from 'drizzle-orm';
 import {
   boolean,
+  doublePrecision,
   integer,
   jsonb,
   pgTableCreator,
@@ -39,7 +40,8 @@ export const users = createTable('user', {
 export const conversations = createTable('conversations', {
   id: uuid('id').primaryKey(),
   userId: uuid('user_id').references(() => users.id),
-  messages: jsonb('messages'),
+  aiState: text('aiState'),
+  uiState: text('uiState'),
   ideaId: uuid('idea_id').references(() => ideas.id),
   writerId: uuid('writer_id').references(() => writers.id),
   scriptId: uuid('script_id').references(() => scripts.id),
@@ -61,6 +63,7 @@ export const conversationRelations = relations(conversations, ({ one }) => ({
   writer: one(writers),
   script: one(scripts),
   voiceover: one(voiceovers),
+  video: one(videos),
 }));
 
 export const ideas = createTable('ideas', {
@@ -118,7 +121,7 @@ export const voiceovers = createTable('voiceovers', {
   id: uuid('id').primaryKey(),
   userId: uuid('user_id').references(() => users.id),
   scriptId: uuid('script_id').references(() => scripts.id),
-  transcript: jsonb('transcript').notNull(),
+  transcript: jsonb('transcript'),
   url: text('url').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -141,8 +144,8 @@ export const visualAssets = createTable('visual_assets', {
   artistId: uuid('artist_id').references(() => artists.id),
   scriptId: uuid('script_id').references(() => scripts.id),
   url: text('url'),
-  start: integer('start'),
-  end: integer('end'),
+  start: doublePrecision('start'),
+  end: doublePrecision('end'),
   fx: varchar('fx', {
     length: 20,
   }),
@@ -158,6 +161,7 @@ export const visualAssets = createTable('visual_assets', {
   animation: text('animation'),
   animatedAt: timestamp('animated_at'),
   index: integer('index'),
+  wordIndex: integer('word_index'),
 });
 
 export const videos = createTable('videos', {

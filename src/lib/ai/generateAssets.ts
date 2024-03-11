@@ -4,6 +4,36 @@ import { TranscriptType } from '../validators/transcript';
 import { visualAssetSchema } from '@/server/api/routers/assets';
 import { architect } from '../prompts/architect';
 import { bravura, openai } from '@/app/action';
+import { VisualAssetType } from '../validators/visual-assets';
+
+export const mapNewAssets = ({
+  description,
+  start,
+  end,
+  index,
+  wordIndex,
+  userId,
+  videoId,
+}: {
+  description: string;
+  start: number;
+  end: number;
+  index: number;
+  wordIndex: number;
+  userId: string;
+  videoId: string;
+}): VisualAssetType =>
+  visualAssetSchema.parse({
+    description,
+    userId,
+    videoId,
+    fx: 'perspective',
+    transition: 'fade',
+    start,
+    end,
+    index,
+    wordIndex,
+  });
 
 const instructions =
   'Please read this full script, propose beautiful imagery and map images to the timings provided.';
@@ -67,25 +97,16 @@ export const generateAssets = async ({
 
     const assetMap = parseJson(result) as unknown as any[];
 
-    const assets = assetMap.map(
-      ({
-        description,
-        start,
-        end,
-      }: {
-        description: string;
-        start: number;
-        end: number;
-      }) =>
-        visualAssetSchema.parse({
-          description,
-          userId,
-          videoId,
-          fx: 'perspective',
-          transition: 'fade',
-          start,
-          end,
-        }),
+    const assets = assetMap.map((asset: any, index) =>
+      mapNewAssets({
+        description: asset.description,
+        start: asset.start,
+        end: asset.end,
+        wordIndex: asset.wordIndex ?? 0,
+        index: index + 1,
+        userId,
+        videoId,
+      }),
     );
 
     return assets;

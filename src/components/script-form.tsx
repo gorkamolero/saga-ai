@@ -81,32 +81,6 @@ export const ScriptForm = ({
       ) : (
         <TextGenerateEffect words={script || ''} />
       )}
-
-      <div className="mt-6 flex w-full items-center justify-between">
-        <div className="flex w-full items-center justify-end space-x-4">
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={() => setEditMode(!editMode)}
-          >
-            {editMode ? <Lock /> : <Edit />}
-          </Button>
-          {editMode ? (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleSave}
-              disabled={!editMode}
-            >
-              <Save />
-            </Button>
-          ) : (
-            <Button variant="outline" onClick={handleSave} disabled={isLoading}>
-              Save
-            </Button>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

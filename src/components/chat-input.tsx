@@ -5,8 +5,10 @@ import { useEnterSubmit } from '@/lib/hooks/use-enter-submit';
 import { useActions, useUIState } from 'ai/rsc';
 import { useEffect, useRef, useState } from 'react';
 import { UserMessage } from './ui/user-message';
+import { useParams } from 'next/navigation';
 
 export const ChatInput = () => {
+  const { conversationId } = useParams();
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useUIState<typeof AI>();
   const { submitUserMessage } = useActions<typeof AI>();
@@ -62,7 +64,10 @@ export const ChatInput = () => {
 
     try {
       // Submit and get response message
-      const responseMessage = await submitUserMessage(value);
+      const responseMessage = await submitUserMessage({
+        message: value,
+        conversationId: conversationId as string,
+      });
       setMessages((currentMessages) => [...currentMessages, responseMessage]);
     } catch (error) {
       // You may want to show a toast or trigger an error state.
@@ -107,7 +112,7 @@ export const ChatInput = () => {
                   id="v0-main-input"
                   maxLength={1000}
                   minLength={2}
-                  className="w-full min-w-[50%] flex-[1_0_50%] resize-none border-0 bg-transparent py-2.5 pr-2 text-sm leading-relaxed text-white shadow-none outline-none ring-0 [scroll-padding-block:0.75rem] selection:bg-teal-300 selection:text-black placeholder:text-zinc-400 disabled:bg-transparent disabled:opacity-80 sm:py-3"
+                  className="text-sm w-full min-w-[50%] flex-[1_0_50%] resize-none border-0 bg-transparent py-2.5 pr-2 leading-relaxed text-white shadow-none outline-none ring-0 [scroll-padding-block:0.75rem] selection:bg-teal-300 selection:text-black placeholder:text-zinc-400 disabled:bg-transparent disabled:opacity-80 sm:py-3"
                   placeholder="I have an idea..."
                   spellCheck={false}
                   style={{
@@ -120,7 +125,7 @@ export const ChatInput = () => {
               </div>
               <div className="flex items-center">
                 <button
-                  className="flex h-[28px] w-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-transparent text-sm font-medium text-white transition-colors hover:bg-gray-800 focus-visible:bg-gray-800 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                  className="text-sm flex h-[28px] w-[28px] shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-transparent font-medium text-white transition-colors hover:bg-gray-800 focus-visible:bg-gray-800 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                   type="submit"
                   id="send-button"
                   data-state="closed"
