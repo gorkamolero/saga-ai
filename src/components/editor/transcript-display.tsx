@@ -1,6 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { EditorContext } from './editor-context';
-import { type VisualAssetType } from '@/lib/validators/visual-assets';
 import { type WordType } from '@/lib/validators/words';
 
 interface Props {
@@ -12,13 +11,12 @@ const adjustment = 0.1;
 export const TranscriptDisplay: React.FC<Props> = ({ words }) => {
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
 
-  const { playerRef, seekTo, selectedAsset, saveAsset } =
+  const { playerRef, seekTo, selectedAsset, saveAsset, currentTime } =
     useContext(EditorContext);
 
   useEffect(() => {
     if (!playerRef || !playerRef?.current) return;
     const onTimeUpdate = () => {
-      const currentTime = playerRef.current?.currentTime;
       if (!currentTime) return;
 
       const newActiveWordIndex = words.findIndex((word) => {
@@ -40,7 +38,7 @@ export const TranscriptDisplay: React.FC<Props> = ({ words }) => {
         player.removeEventListener('timeupdate', onTimeUpdate);
       }
     };
-  }, [words]);
+  }, [words, currentTime, playerRef]);
 
   const [isStartClicked, setIsStartClicked] = useState(false);
 
@@ -65,7 +63,7 @@ export const TranscriptDisplay: React.FC<Props> = ({ words }) => {
 
         if (word.start && word.end && saveAsset) {
           const updatedAsset = {
-            ...(selectedAsset),
+            ...selectedAsset,
             start: newStart,
             ...(newEnd && { end: newEnd }),
           };

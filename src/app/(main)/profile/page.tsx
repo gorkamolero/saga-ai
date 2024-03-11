@@ -1,9 +1,14 @@
-import { api } from '@/trpc/server';
+'use client';
+
+import { api } from '@/trpc/react';
 import ProfileFormClient from '@/components/profile-form';
 
 export default async function ProfileForm() {
-  const profile = await api.users.get.query();
+  const { data: profile, isLoading } = await api.users.get.useQuery();
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   const defaultProfile = {
     firstName: profile?.firstName || '',
     lastName: profile?.lastName || '',

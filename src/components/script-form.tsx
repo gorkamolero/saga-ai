@@ -16,7 +16,7 @@ export const ScriptForm = ({
   id,
 }: {
   script: string;
-  title: string;
+  title?: string;
   id: string;
 }) => {
   const [editMode, setEditMode] = useState(false);

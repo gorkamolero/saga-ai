@@ -7,14 +7,13 @@ import { api } from '@/trpc/server';
 import { LoadingSpinner } from '@/components/ui/spinner';
 import { AiMessage } from '@/components/ui/ai-message';
 import { runAsyncFnWithoutBlocking, runOpenAICompletion } from '@/lib/utils';
-import { writeScript } from '@/lib/ai/actions/writeScript';
 import { saveIdea } from '@/lib/ai/actions/saveIdea';
 import { type ChatCompletionUserMessageParam } from 'openai/resources/index.mjs';
 import { scriptwriter } from '@/lib/prompts/scriptwriter';
 import { VoiceoverResult } from '@/components/llm/voiceover-result';
 import { v4 } from 'uuid';
 import { modernArchitect } from '@/lib/prompts/modern-architect';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { Redirector } from '@/components/llm/redirector';
@@ -675,7 +674,6 @@ export const AI = createAI({
   actions: {
     submitUserMessage,
     saveIdea,
-    writeScript,
   },
   // Each state can be any shape of object, but for chat applications
   // it makes sense to have an array of messages. Or you may prefer something like { id: number, messages: Message[] }

@@ -10,7 +10,8 @@ import { ChatList } from './chat-list';
 import { useParams } from 'next/navigation';
 
 export function Chat() {
-  const { conversationId } = useParams();
+  const params = useParams();
+  const conversationId = params.conversationId as string;
   const scrollRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useUIState<typeof AI>();
   const { submitUserMessage } = useActions<typeof AI>();

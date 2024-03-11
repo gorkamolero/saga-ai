@@ -6,8 +6,6 @@ import { ContentCard } from '@/components/content-card';
 import { type AI } from '../../../app/action';
 import { api } from '@/trpc/server';
 
-const nextActions = [`Let's generate a script`];
-
 export async function saveIdea({
   title,
   description,
@@ -44,31 +42,21 @@ export async function saveIdea({
     description,
   });
 
-  aiState.done([
+  const aiStateUpdate = [
     ...aiState.get(),
     {
-      role: 'system',
+      role: 'system' as 'function' | 'user' | 'system' | 'assistant',
       content: `[The user has saved a new idea with title "${title}" and description "${description}" with id: ${id}]. If the user asks about this idea, you can tell him any information about it.`,
     },
     {
-      role: 'assistant',
+      role: 'assistant' as 'function' | 'user' | 'system' | 'assistant',
       content: `Congratulations! Your idea "${title}" has been saved successfully. Do you want to create a script for it?`,
     },
-  ]);
-
-  await api.conversations.updateCurrent.mutate({
-    ideaId: id,
-    aiState: [
-      ...aiState.get(),
-      {
-        role: 'system',
-        content: `[The user has saved a new idea with title "${title}" and description "${description}" with id: ${id}]. If the user asks about this idea, you can tell him any information about it.`,
-      },
-      {
-        role: 'assistant',
-        content: `Congratulations! Your idea "${title}" has been saved successfully. Do you want to create a script for it?`,
-      },
-    ],
+  ];
+  aiState.done(aiStateUpdate);
+  await api.conversations.updateAiState.mutate({
+    id: conversationId,
+    aiState: aiStateUpdate,
   });
 
   return {
