@@ -1,10 +1,10 @@
 import { v4 } from 'uuid';
 import parseJson from 'parse-json';
-import { TranscriptType } from '../validators/transcript';
+import { type TranscriptType } from '../validators/transcript';
 import { visualAssetSchema } from '@/server/api/routers/assets';
 import { architect } from '../prompts/architect';
 import { bravura, openai } from '@/app/action';
-import { VisualAssetType } from '../validators/visual-assets';
+import { type VisualAssetType } from '../validators/visual-assets';
 
 export const mapNewAssets = ({
   description,
@@ -49,7 +49,7 @@ Script : ${script}
 
 ---
 
-Script divided in words and timing: ${transcript}
+Script divided in words and timing: ${JSON.stringify(transcript)}
 
 ---
 

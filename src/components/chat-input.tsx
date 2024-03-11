@@ -1,6 +1,6 @@
 'use client';
 
-import { AI } from '@/app/action';
+import { type AI } from '@/app/action';
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit';
 import { useActions, useUIState } from 'ai/rsc';
 import { useEffect, useRef, useState } from 'react';
@@ -46,7 +46,7 @@ export const ChatInput = () => {
 
     // Blur focus on mobile
     if (window.innerWidth < 600) {
-      e.target['message']?.blur();
+      e.target.message?.blur();
     }
 
     const value = inputValue.trim();

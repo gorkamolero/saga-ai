@@ -28,7 +28,7 @@ export const generateScript = async ({
       model: 'anthropic/claude-3-opus',
     });
 
-    let result = (completion.choices[0] as any)?.message.content;
+    const result = (completion.choices[0] as any)?.message.content;
 
     if (!result) return { error: 'No result' };
 

@@ -7,7 +7,7 @@ import { TextGenerateEffect } from './ui/text-generate-fx';
 import { Button } from './ui/button';
 import { Edit, Lock, Save } from 'lucide-react';
 import { api } from '@/trpc/react';
-import { AI } from '@/app/action';
+import { type AI } from '@/app/action';
 import { AiMessage } from './ui/ai-message';
 
 export const ScriptForm = ({

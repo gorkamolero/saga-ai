@@ -4,14 +4,7 @@ import { Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import { Editor } from '@/components/editor';
 import { api } from '@/trpc/react';
-import type { VideoType } from '@/server/api/routers/videos';
-import { VoiceoverType } from '@/server/api/routers/voiceovers';
-
-export type FullVideoType = VideoType & {
-  visualAssets: any[];
-  voiceover: VoiceoverType;
-  script: string;
-};
+import { type FullVideoType } from '@/lib/validators/videos';
 
 const VideoPage = () => {
   const { id } = useParams();

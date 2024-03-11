@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import { UserType } from "../validators/full-user";
+import { type UserType } from "../validators/full-user";
 
 const user = null;
 

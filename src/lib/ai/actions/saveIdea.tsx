@@ -3,7 +3,7 @@ import 'server-only';
 import { getMutableAIState } from 'ai/rsc';
 import { AiMessage } from '@/components/ui/ai-message';
 import { ContentCard } from '@/components/content-card';
-import { AI } from '../../../app/action';
+import { type AI } from '../../../app/action';
 import { api } from '@/trpc/server';
 
 const nextActions = [`Let's generate a script`];

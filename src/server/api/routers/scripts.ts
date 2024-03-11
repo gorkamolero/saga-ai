@@ -54,7 +54,7 @@ export const scriptRouter = createTRPCRouter({
         return updatedScript[0];
       }
 
-      const userId = ctx.user.id as string;
+      const userId = ctx.user.id;
       const user = await ctx.db.query.users.findFirst({
         where: eq(users.id, userId),
       });

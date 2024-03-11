@@ -1,4 +1,4 @@
-import { Orientation, createApi } from 'unsplash-js';
+import { type Orientation, createApi } from 'unsplash-js';
 
 const unsplash = createApi({
   accessKey: process.env.UNSPLASH_ACCESS_KEY!,

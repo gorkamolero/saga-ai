@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { api } from '@/trpc/react';
 import { Button } from '../ui/button';
 import { useActions, useUIState } from 'ai/rsc';
-import { AI } from '@/app/action';
+import { type AI } from '@/app/action';
 import { ContentCard } from '../content-card';
 import { LoadingSpinner } from '../ui/spinner';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,7 @@ export const ScriptWriter = () => {
   };
 
   useEffect(() => {
-    if (ideas && ideas.length) {
+    if (ideas?.length) {
       ideas.sort((a, b) => {
         return a.createdAt < b.createdAt ? 1 : -1;
       });

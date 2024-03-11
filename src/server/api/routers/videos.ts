@@ -68,7 +68,7 @@ export const videoRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user.id as string;
+      const userId = ctx.user.id;
       const user = await ctx.db.query.users.findFirst({
         where: eq(users.id, userId),
       });
@@ -97,7 +97,6 @@ export const videoRouter = createTRPCRouter({
         !writerId ||
         !scriptId ||
         !voiceoverId ||
-        !idea ||
         !idea?.description
       ) {
         throw new Error('Conversation is missing required data');

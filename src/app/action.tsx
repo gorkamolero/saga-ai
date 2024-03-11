@@ -9,7 +9,7 @@ import { AiMessage } from '@/components/ui/ai-message';
 import { runAsyncFnWithoutBlocking, runOpenAICompletion } from '@/lib/utils';
 import { writeScript } from '@/lib/ai/actions/writeScript';
 import { saveIdea } from '@/lib/ai/actions/saveIdea';
-import { ChatCompletionUserMessageParam } from 'openai/resources/index.mjs';
+import { type ChatCompletionUserMessageParam } from 'openai/resources/index.mjs';
 import { scriptwriter } from '@/lib/prompts/scriptwriter';
 import { VoiceoverResult } from '@/components/llm/voiceover-result';
 import { v4 } from 'uuid';
@@ -19,7 +19,6 @@ import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { Redirector } from '@/components/llm/redirector';
 import { AiMarkdownMessage } from '@/components/ui/ai-markdown-message';
-import { VisualAssetType } from '@/lib/validators/visual-assets';
 
 // const isBravura = false;
 
@@ -45,7 +44,7 @@ async function submitUserMessage({
   'use server';
 
   const aiState = getMutableAIState<typeof AI>();
-  const stateNow = aiState.get() as any;
+  const stateNow = aiState.get();
   aiState.update([
     ...stateNow,
     {
@@ -68,7 +67,7 @@ async function submitUserMessage({
         content: `YOUR NAME IS THE ARCHITECT. YOU ARE FUNDAMENTAL TO THE OPERATION.
 The user comes here to make a video with you. Help them at their request but don't waste their time with nonsense questions asking them to go deeper.
 Your style of conversation is short, masculine, to the point. You write like Ernest Hemingway and Jack Kerouac. Be serious
-        
+
 Messages inside [] means that it's a UI element or a user event. For example:
 - "[The user has created an idea with title x or y]" means that the user and you have come up with an idea to develop.
 
@@ -400,7 +399,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
           voicemodel: 'onyx',
         });
 
-        if (!voiceover || !voiceover.id || !voiceover.url) {
+        if (!voiceover?.id || !voiceover.url) {
           reply.update(
             <AiMessage>
               <p>
@@ -537,7 +536,9 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         <AiMessage>
           <div className="grid grid-cols-2 gap-4">
             {mappedAssets.map((asset) => (
-              <Card className="aspect-square p-4">{asset.description}</Card>
+              <Card key={asset.description} className="aspect-square p-4">
+                {asset.description}
+              </Card>
             ))}
           </div>
         </AiMessage>
@@ -617,7 +618,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
 
     const aiStateJSONString = await aiStateJSON.text();
 
-    const convoState = JSON.parse(aiStateJSONString as string);
+    const convoState = JSON.parse(aiStateJSONString);
 
     const aiStateNow = aiState.get();
 

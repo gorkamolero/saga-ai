@@ -4,7 +4,7 @@ import { conversations, videos, visualAssets } from '@/server/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
 import { createInsertSchema } from 'drizzle-zod';
-import { TranscriptType } from '@/lib/validators/transcript';
+import { type TranscriptType } from '@/lib/validators/transcript';
 import { generateAssets, mapNewAssets } from '@/lib/ai/generateAssets';
 import { searchUnsplashPhotos } from '../utils/unsplash';
 import { createClient } from '@/utils/supabase/server';
@@ -39,7 +39,7 @@ export const visualAssetRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      if (!input || !input?.id) throw new Error('No id provided');
+      if (!input?.id) throw new Error('No id provided');
       const visualAsset = await ctx.db.query.visualAssets.findFirst({
         where: eq(visualAssets.id, input.id),
       });
@@ -54,7 +54,7 @@ export const visualAssetRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!input || !input?.id) throw new Error('No id provided');
+      if (!input?.id) throw new Error('No id provided');
       await ctx.db
         .update(visualAssets)
         .set({
@@ -71,7 +71,7 @@ export const visualAssetRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!input || !input?.assets || input.assets.length === 0)
+      if (!input?.assets || input.assets.length === 0)
         throw new Error('No assets provided');
 
       if (!input?.conversationId) throw new Error('No conversationId provided');
@@ -80,8 +80,8 @@ export const visualAssetRouter = createTRPCRouter({
         where: eq(conversations.id, input.conversationId),
       });
 
-      const userId = ctx.user.id as string;
-      const videoId = conversation?.videoId as string;
+      const userId = ctx.user.id;
+      const videoId = conversation?.videoId!;
 
       await ctx.db
         .delete(visualAssets)
@@ -91,10 +91,10 @@ export const visualAssetRouter = createTRPCRouter({
         .map((asset, index) =>
           mapNewAssets({
             ...asset,
-            description: asset.description as string,
-            start: asset.start as number,
-            end: asset.end as number,
-            wordIndex: asset.wordIndex as number,
+            description: asset.description!,
+            start: asset.start!,
+            end: asset.end!,
+            wordIndex: asset.wordIndex!,
             index,
             userId: userId,
             videoId: videoId,
@@ -120,7 +120,7 @@ export const visualAssetRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user.id as string;
+      const userId = ctx.user.id;
       const video = await ctx.db.query.videos.findFirst({
         where: eq(videos.id, input.id),
         with: {
@@ -129,12 +129,12 @@ export const visualAssetRouter = createTRPCRouter({
         },
       });
 
-      if (!video || !video.voiceover || !video.script) {
+      if (!video?.voiceover || !video.script) {
         throw new Error('Video not found');
       }
 
       const transcript = video?.voiceover?.transcript as TranscriptType;
-      const script = video?.script?.content as string;
+      const script = video?.script?.content;
 
       const areThereAssets = await ctx.db.query.visualAssets.findMany({
         where: and(eq(visualAssets.videoId, input.id)),
@@ -152,7 +152,7 @@ export const visualAssetRouter = createTRPCRouter({
         transcript,
         userId,
         videoId: input.id,
-      })) as VisualAssetType[];
+      }));
 
       const assetsWithIdAndIndex = assets.map((asset, index) => ({
         ...asset,
@@ -194,7 +194,7 @@ export const visualAssetRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user.id as string;
+      const userId = ctx.user.id;
       const id = input.id;
       const description = input.description;
 
@@ -245,7 +245,7 @@ export const visualAssetRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const userId = ctx.user.id as string;
+      const userId = ctx.user.id;
       const id = input.id;
 
       if (!id) {

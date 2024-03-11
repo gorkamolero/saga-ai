@@ -21,7 +21,7 @@ export const writerRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      if (!input || !input?.id) throw new Error('No id provided');
+      if (!input?.id) throw new Error('No id provided');
       const writer = await ctx.db.query.writers.findFirst({
         where: eq(writers.id, input.id),
       });
@@ -36,7 +36,7 @@ export const writerRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!input || !input?.id) throw new Error('No id provided');
+      if (!input?.id) throw new Error('No id provided');
       const createwriter = await ctx.db
         .insert(writers)
         .values({

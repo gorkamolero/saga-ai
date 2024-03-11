@@ -1,7 +1,7 @@
 'use client';
 
 import { getInputProps } from 'remotion';
-import { VisualAssetType } from '../validators/visual-assets';
+import { type VisualAssetType } from '../validators/visual-assets';
 import mockData from '@/lib/integrations/remotion/lib/mockData';
 
 import type { PREMIUM_FX } from '@/lib/validators/fx';
@@ -190,7 +190,7 @@ export function convertMsToFrames(ms: number, fps: number) {
 }
 
 export const getFullInputProps = () => {
-  let inputProps: any = getInputProps();
+  const inputProps: any = getInputProps();
   if (inputProps && Object.keys(inputProps).length) {
     return inputProps;
   }

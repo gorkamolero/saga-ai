@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useAIState, useActions, useUIState } from 'ai/rsc';
-import { AI } from '@/app/action';
+import { type AI } from '@/app/action';
 import { useId, useState } from 'react';
 
 const ideaSchema = z.object({

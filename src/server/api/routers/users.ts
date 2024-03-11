@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { type z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import {
   ideas,

@@ -4,13 +4,13 @@ import { UserMessage } from './ui/user-message';
 import { ChatInput } from './chat-input';
 import { useEffect, useRef } from 'react';
 import { useActions, useUIState } from 'ai/rsc';
-import { AI } from '@/app/action';
+import { type AI } from '@/app/action';
 import { EmptyScreen } from './empty-chat-screen';
 import { ChatList } from './chat-list';
 import { useParams } from 'next/navigation';
 
 export function Chat() {
-  const { conversationId } = useParams() as { conversationId: string };
+  const { conversationId } = useParams();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useUIState<typeof AI>();
   const { submitUserMessage } = useActions<typeof AI>();

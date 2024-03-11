@@ -7,7 +7,7 @@ import { runAsyncFnWithoutBlocking, sleep } from '@/lib/utils';
 import { ContentCard } from '@/components/content-card';
 import { generateScript } from '@/lib/ai/generateScript';
 import { ScriptForm } from '@/components/script-form';
-import { AI } from '../../../app/action';
+import { type AI } from '../../../app/action';
 
 export async function writeScript({
   title,

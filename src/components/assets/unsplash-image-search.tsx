@@ -48,7 +48,7 @@ export const UnsplashImageSearch = ({ assetId }: { assetId: string }) => {
           images?.map((image) => {
             const handleSave = () =>
               saveAsset({
-                id: assetId as string,
+                id: assetId,
                 url: image.urls.regular,
               });
             return (

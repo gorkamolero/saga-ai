@@ -2,13 +2,13 @@
 import { Button } from '@/components/ui/button';
 import { Pause, Play } from 'lucide-react';
 import { useContext } from 'react';
-import { TranscriptContext } from './transcript-context';
+import { EditorContext } from './editor-context';
 import { formatTime } from '@/lib/utils';
-import { VideoType } from '@/server/api/routers/videos';
+import { type VideoType } from '@/server/api/routers/videos';
 
 export const Player = ({ video }: { video: VideoType }) => {
   const { isPlaying, togglePlay, duration, currentTime, seekTo } =
-    useContext(TranscriptContext);
+    useContext(EditorContext);
 
   const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const timelineWidth = e.currentTarget.clientWidth;

@@ -1,22 +1,20 @@
-import { FullVideoType } from '@/app/(main)/videos/[id]/page';
+import { type FullVideoType } from '@/lib/validators/videos';
 import { FPS } from '@/lib/constants';
 import {
   Tubesleuth,
-  TubesleuthProps,
+  type TubesleuthProps,
 } from '@/lib/integrations/remotion/Composition';
 import { convertSecondsToFrames } from '@/lib/utils/animations';
-import { TranscriptType } from '@/lib/validators/transcript';
-import { VisualAssetType } from '@/lib/validators/visual-assets';
-import { DialogDrawer } from './ui/dialog-drawer';
-import { redirect } from 'next/navigation';
+import { type TranscriptType } from '@/lib/validators/transcript';
+import { type VisualAssetType } from '@/lib/validators/visual-assets';
 import { Player } from '@remotion/player';
 
 export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
   const transcript = video?.voiceover?.transcript as TranscriptType;
-  const assets = video?.visualAssets.sort((a, b) => a.index - b.index);
+  const assets = video?.visualAssets.sort(
+    (a: any, b: any) => a.index - b.index,
+  );
   const videoDuration = video?.duration || 0;
-
-  console.log('video', assets);
 
   const ourFPS = FPS;
 
@@ -35,27 +33,24 @@ export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
   const inputProps: TubesleuthProps = {
     videoId: video.id,
     fps: ourFPS,
-    script: video.script as string,
+    script: video.script,
     subtitles,
     assets: assets as VisualAssetType[],
     // TODO: MUSIC
     music:
       'https://ezamdwrrzqrnyewhqdup.supabase.co/storage/v1/object/public/assets/deep.mp3?t=2024-03-04T12%3A55%3A07.216Z',
-    voiceover: video.voiceover.url as string,
+    voiceover: video.voiceover.url!,
     durationInFrames,
   };
 
   return (
-    <DialogDrawer
-      open
-      title="Your video"
-      onClose={() => redirect(`/videos/${video.id}`)}
-    >
+    <div className="flex h-full w-full items-center justify-center p-8">
       <div
         className="flex w-full flex-col items-center justify-center"
         style={{ aspectRatio: '9 / 16' }}
       >
         <Player
+          clickToPlay
           component={Tubesleuth}
           inputProps={inputProps}
           durationInFrames={durationInFrames}
@@ -66,9 +61,9 @@ export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
             width: '100%',
             aspectRatio: '9/16',
           }}
-          controls
+          initiallyShowControls
         />
       </div>
-    </DialogDrawer>
+    </div>
   );
 };

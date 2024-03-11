@@ -8,7 +8,7 @@ import {
   DialogContent,
   Dialog,
 } from '@/components/ui/dialog';
-import { UnsplashImageSearch } from './assets/unsplash-image-search';
+import { UnsplashImageSearch } from '../assets/unsplash-image-search';
 
 export function AssetSelectDialog({
   trigger,

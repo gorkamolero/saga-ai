@@ -1,8 +1,8 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
-import { IconType } from "react-icons";
-import { Eye, EyeOff, Lock, LucideIcon, LucideProps } from "lucide-react";
+import { type IconType } from "react-icons";
+import { Eye, EyeOff, Lock, type LucideIcon, type LucideProps } from "lucide-react";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {

@@ -1,15 +1,15 @@
 'use client';
 import React, { useContext } from 'react';
-import { VisualAssetType } from '@/server/api/routers/assets';
+import { type VisualAssetType } from '@/server/api/routers/assets';
 import { cn, formatTime } from '@/lib/utils';
 import { AssetSelectDialog } from './asset-select';
-import { Button } from './ui/button';
-import { TranscriptContext } from './player/transcript-context';
+import { Button } from '../ui/button';
+import { EditorContext } from './editor-context';
 import { Edit, Image, Save, Video, Wand } from 'lucide-react';
-import { Card, CardContent } from './ui/card';
+import { Card, CardContent } from '../ui/card';
 import { api } from '@/trpc/react';
-import { LoadingSpinner } from './ui/spinner';
-import { Textarea } from './ui/textarea';
+import { LoadingSpinner } from '../ui/spinner';
+import { Textarea } from '../ui/textarea';
 
 export const AssetCard = ({
   asset,
@@ -19,34 +19,34 @@ export const AssetCard = ({
 }) => {
   const [isEditing, setIsEditing] = React.useState(false);
 
-  const { selectedAsset, setSelectedAsset } = useContext(TranscriptContext);
+  const { selectedAsset, setSelectedAsset } = useContext(EditorContext);
   const isSelected = selectedAsset?.id === asset.id;
 
   const { mutate: generate, isLoading: isLoadingGenerate } =
     api.assets.generateImage.useMutation();
   const handleGenerate = async (e: React.MouseEvent) => {
-    if (!asset || !asset.id || !asset.description) return;
+    if (!asset?.id || !asset.description) return;
     await generate({ id: asset.id, description: asset.description });
   };
 
   const { mutate: animate, isLoading: isLoadingAnimate } =
     api.assets.animate.useMutation();
   const handleAnimate = async (e: React.MouseEvent) => {
-    if (!asset || !asset.id) return;
+    if (!asset?.id) return;
     await animate({ id: asset.id });
   };
 
   const { mutate: save, isLoading: isLoadingSave } =
     api.assets.update.useMutation();
   const handleSave = async () => {
-    if (!asset || !asset.id) return;
+    if (!asset?.id) return;
     await save({ ...asset, id: asset.id });
     setIsEditing(false);
   };
 
   const [description, setDescription] = React.useState(asset.description || '');
 
-  if (!asset || !asset.id || !setSelectedAsset) {
+  if (!asset?.id || !setSelectedAsset) {
     return null;
   }
 
@@ -58,7 +58,7 @@ export const AssetCard = ({
         <CardContent className="flex h-full flex-col gap-2">
           {asset.animation ? (
             <video
-              src={asset.animation as string}
+              src={asset.animation}
               className="h-full w-full rounded-lg object-cover"
               controls
             />
@@ -77,7 +77,7 @@ export const AssetCard = ({
             <Textarea
               value={description || ''}
               onChange={(e) => {
-                setSelectedAsset(asset as VisualAssetType);
+                setSelectedAsset(asset);
                 setDescription(e.target.value);
               }}
               autoResize

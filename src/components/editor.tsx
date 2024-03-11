@@ -4,22 +4,24 @@ import React, { useContext, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 import { Plus, PlusCircle, PlayCircle, Wand } from 'lucide-react';
-import { FullVideoType } from '@/app/(main)/videos/[id]/page';
-import { Player } from './player';
+import { type FullVideoType } from '@/lib/validators/videos';
+import { Player } from '@/components/editor/bottom-player';
 import {
-  TranscriptContext,
-  TranscriptProvider,
-} from './player/transcript-context';
-import { TranscriptDisplay } from './transcript-display';
-import { VisualAssetType } from '@/server/api/routers/assets';
+  EditorContext,
+  EditorProvider,
+} from '@/components/editor/editor-context';
+import { TranscriptDisplay } from '@/components/editor/transcript-display';
+import { type VisualAssetType } from '@/server/api/routers/assets';
 import { api } from '@/trpc/react';
-import { LoadingSpinner } from './ui/spinner';
-import { AssetCard } from './asset-card';
-import { RemotionPlayer } from './remotion-player';
+import { LoadingSpinner } from '@/components/ui/spinner';
+import { AssetCard } from '@/components/editor/asset-card';
+import { RemotionPlayer } from './editor/remotion-player';
+import { type WordType } from '@/lib/validators/words';
 
 const PANEL_DEFAULT_SIZES = {
-  transcript: 40,
-  assets: 60,
+  video: 34,
+  transcript: 33,
+  assets: 33,
   footerHeight: '6rem',
 };
 
@@ -42,7 +44,7 @@ export const Editor = ({ video }: { video: FullVideoType }) => {
   };
 
   return (
-    <TranscriptProvider src={(video?.voiceover?.url as string) || ''}>
+    <EditorProvider video={video}>
       <div className="flex h-full flex-grow flex-col border-t">
         <div
           className={`flex-grow flex-col pb-[${PANEL_DEFAULT_SIZES.footerHeight}]`}
@@ -52,23 +54,18 @@ export const Editor = ({ video }: { video: FullVideoType }) => {
           }}
         >
           <PanelGroup direction="horizontal" autoSaveId="asset-interface">
+            <Panel defaultSize={PANEL_DEFAULT_SIZES.video} className="h-full">
+              {video && <RemotionPlayer video={video} />}
+            </Panel>
             <Panel defaultSize={PANEL_DEFAULT_SIZES.transcript}>
               {video?.voiceover?.transcript && (
                 <div className="p-8">
-                  {typeof video.voiceover.transcript === 'object' &&
-                    'words' in video.voiceover.transcript && (
-                      <TranscriptDisplay
-                        transcript={
-                          video.voiceover.transcript as {
-                            words: {
-                              text: string;
-                              start: number;
-                              end: number;
-                            }[];
-                          }
-                        }
-                      />
-                    )}
+                  <TranscriptDisplay
+                    words={
+                      (video.voiceover.transcript as { words: WordType[] })
+                        .words
+                    }
+                  />
                 </div>
               )}
             </Panel>
@@ -85,58 +82,47 @@ export const Editor = ({ video }: { video: FullVideoType }) => {
                       {isVideoVisible ? <PlusCircle /> : <PlayCircle />}
                     </Button>
                   </div>
-                  {isVideoVisible ? (
-                    <div className="flex h-full w-full items-center justify-center p-8">
-                      <RemotionPlayer video={video} />
-                    </div>
-                  ) : (
-                    <div className="grid h-full flex-grow grid-cols-3 items-stretch gap-10 gap-y-4 overflow-y-auto p-8">
+                  <div className="grid h-full flex-grow grid-cols-3 items-stretch gap-10 gap-y-4 overflow-y-auto p-8">
+                    <button
+                      onClick={addAsset}
+                      className="flex flex-col items-center justify-center gap-2 rounded-lg border border-gray-200 p-4 shadow-sm transition-colors hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800"
+                      style={{ aspectRatio: 'square' }}
+                      disabled={isLoading}
+                    >
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
+                        <Plus className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                      </div>
+                      <span>Add Asset</span>
+                    </button>
+
+                    {hasAssets ? (
+                      <AssetSelector
+                        assets={video?.visualAssets}
+                        selectedAssetId={video?.visualAssets[0].id as string}
+                        onAssetSelect={(assetId) => {
+                          // Logic to select an asset
+                        }}
+                      />
+                    ) : (
                       <button
-                        onClick={addAsset}
+                        onClick={handleGenerateAssets}
                         className="flex flex-col items-center justify-center gap-2 rounded-lg border border-gray-200 p-4 shadow-sm transition-colors hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800"
                         style={{ aspectRatio: 'square' }}
                         disabled={isLoading}
                       >
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
-                          <Plus className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full border bg-gray-200 dark:bg-gray-700">
+                          {isLoading ? (
+                            <LoadingSpinner />
+                          ) : (
+                            <Wand className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                          )}
                         </div>
-                        <span>Add Asset</span>
+                        <span>Generate</span>
                       </button>
-
-                      {hasAssets ? (
-                        <AssetSelector
-                          assets={video?.visualAssets}
-                          selectedAssetId={video?.visualAssets[0].id as string}
-                          onAssetSelect={(assetId) => {
-                            // Logic to select an asset
-                          }}
-                        />
-                      ) : (
-                        <button
-                          onClick={handleGenerateAssets}
-                          className="flex flex-col items-center justify-center gap-2 rounded-lg border border-gray-200 p-4 shadow-sm transition-colors hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800"
-                          style={{ aspectRatio: 'square' }}
-                          disabled={isLoading}
-                        >
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full border bg-gray-200 dark:bg-gray-700">
-                            {isLoading ? (
-                              <LoadingSpinner />
-                            ) : (
-                              <Wand className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-                            )}
-                          </div>
-                          <span>Generate</span>
-                        </button>
-                      )}
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-              {/* {isVideoVisible && (
-            <div className="absolute bottom-4 left-4 right-4">
-              <Video src={`/api/videos/${video.id}`} />
-            </div>
-          )} */}
             </Panel>
           </PanelGroup>
         </div>
@@ -148,7 +134,7 @@ export const Editor = ({ video }: { video: FullVideoType }) => {
           {/* Render the audio/video player */}
         </div>
       </div>
-    </TranscriptProvider>
+    </EditorProvider>
   );
 };
 
@@ -165,14 +151,14 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
 }) => {
   const [selectedId, setSelectedId] = useState(selectedAssetId);
   const { setIsSelectingAsset, saveAsset, setSelectedAsset } =
-    useContext(TranscriptContext);
+    useContext(EditorContext);
 
   const handleSelect = (assetId: string) => {
     setSelectedId(assetId);
     onAssetSelect(assetId);
     setIsSelectingAsset(false);
     const asset = assets.find((a) => a.id === assetId);
-    if (setSelectedAsset) setSelectedAsset(asset as VisualAssetType);
+    if (setSelectedAsset) setSelectedAsset(asset!);
   };
 
   if (!assets) return null;
@@ -193,7 +179,7 @@ const AssetSelector: React.FC<AssetSelectorProps> = ({
             name="asset"
             value={asset.id}
             checked={selectedId === asset.id}
-            onChange={() => handleSelect(asset.id as string)}
+            onChange={() => handleSelect(asset.id!)}
             className="absolute opacity-0"
           />
           <label

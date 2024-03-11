@@ -16,7 +16,7 @@ export const conversationRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      if (!input || !input?.id) throw new Error('No id provided');
+      if (!input?.id) throw new Error('No id provided');
       const conversation = await ctx.db.query.conversations.findFirst({
         where: eq(conversations.id, input.id),
       });
@@ -31,7 +31,7 @@ export const conversationRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!input || !input?.id) throw new Error('No id provided');
+      if (!input?.id) throw new Error('No id provided');
       const id = input.id;
       const conversation = await ctx.db.query.conversations.findFirst({
         where: eq(conversations.id, id),
@@ -103,7 +103,7 @@ export const conversationRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      if (!input || !input?.id) throw new Error('No id provided');
+      if (!input?.id) throw new Error('No id provided');
       const conversation = await ctx.db.query.conversations.findFirst({
         where: eq(conversations.id, input.id),
         with: {
@@ -144,7 +144,7 @@ export const conversationRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (!input || !input?.id) throw new Error('No id provided');
+      if (!input?.id) throw new Error('No id provided');
       const id = input.id;
 
       const client = createClient(cookies());
@@ -153,7 +153,7 @@ export const conversationRouter = createTRPCRouter({
         ? input.aiState
         : [];
 
-      const userId = ctx.user.id as string;
+      const userId = ctx.user.id;
 
       const aiStateUrl = `${userId}/${id}.json`;
 

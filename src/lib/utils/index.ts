@@ -1,14 +1,14 @@
 import {
-  TAnyToolDefinitionArray,
-  TToolDefinitionMap,
+  type TAnyToolDefinitionArray,
+  type TToolDefinitionMap,
 } from '@/lib/utils/tool-definition';
 import { OpenAIStream } from 'ai';
 import type OpenAI from 'openai';
 import zodToJsonSchema from 'zod-to-json-schema';
-import { z } from 'zod';
+import { type z } from 'zod';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Transcript } from 'assemblyai';
+import { type Transcript } from 'assemblyai';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -67,7 +67,7 @@ export function runOpenAICompletion<
     functionsMap[fn.name] = fn;
   }
 
-  let onFunctionCall = {} as any;
+  const onFunctionCall = {} as any;
 
   const { functions, ...rest } = params;
 

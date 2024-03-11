@@ -19,8 +19,8 @@ import {
   getDurationInFrames,
 } from '@/lib/utils/animations';
 import type { VisualAssetType } from '@/lib/validators/visual-assets';
-import { PREMIUM_FX } from '@/lib/validators/fx';
-import { VoiceoverType } from '@/server/api/routers/voiceovers';
+import { type PREMIUM_FX } from '@/lib/validators/fx';
+import { type VoiceoverType } from '@/server/api/routers/voiceovers';
 
 export interface CompositionProps {
   fps: number;
@@ -90,7 +90,7 @@ export const Tubesleuth: React.FC<TubesleuthProps> = ({
       </TransitionSeries>
 
       <AbsoluteFill>
-        <Audio src={voiceoverUrl as string} />
+        <Audio src={voiceoverUrl} />
         <Audio
           src={
             music ||

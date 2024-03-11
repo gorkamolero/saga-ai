@@ -1,24 +1,19 @@
 import { useContext, useEffect, useRef, useState } from 'react';
-import { TranscriptContext } from './player/transcript-context';
-import { VisualAssetType } from '@/lib/validators/visual-assets';
+import { EditorContext } from './editor-context';
+import { type VisualAssetType } from '@/lib/validators/visual-assets';
+import { type WordType } from '@/lib/validators/words';
 
 interface Props {
-  transcript: {
-    words: {
-      text: string;
-      start: number;
-      end: number;
-    }[];
-  };
+  words: WordType[];
 }
 
 const adjustment = 0.1;
 
-export const TranscriptDisplay: React.FC<Props> = ({ transcript }) => {
+export const TranscriptDisplay: React.FC<Props> = ({ words }) => {
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
 
   const { playerRef, seekTo, selectedAsset, saveAsset } =
-    useContext(TranscriptContext);
+    useContext(EditorContext);
 
   useEffect(() => {
     if (!playerRef || !playerRef?.current) return;
@@ -26,7 +21,7 @@ export const TranscriptDisplay: React.FC<Props> = ({ transcript }) => {
       const currentTime = playerRef.current?.currentTime;
       if (!currentTime) return;
 
-      const newActiveWordIndex = transcript.words.findIndex((word) => {
+      const newActiveWordIndex = words.findIndex((word) => {
         // Convert start and end times to seconds before comparison
         const startInSeconds = word.start / 1000 - adjustment;
         const endInSeconds = word.end / 1000;
@@ -45,7 +40,7 @@ export const TranscriptDisplay: React.FC<Props> = ({ transcript }) => {
         player.removeEventListener('timeupdate', onTimeUpdate);
       }
     };
-  }, [transcript.words]);
+  }, [words]);
 
   const [isStartClicked, setIsStartClicked] = useState(false);
 
@@ -59,7 +54,7 @@ export const TranscriptDisplay: React.FC<Props> = ({ transcript }) => {
       let newEnd = 0;
       if (!isStartClicked) {
         // if word is first
-        if (transcript.words[0] !== word) {
+        if (words[0] !== word) {
           newStart = word.start;
         }
         setIsStartClicked(true);
@@ -70,7 +65,7 @@ export const TranscriptDisplay: React.FC<Props> = ({ transcript }) => {
 
         if (word.start && word.end && saveAsset) {
           const updatedAsset = {
-            ...(selectedAsset as VisualAssetType),
+            ...(selectedAsset),
             start: newStart,
             ...(newEnd && { end: newEnd }),
           };
@@ -85,7 +80,7 @@ export const TranscriptDisplay: React.FC<Props> = ({ transcript }) => {
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap">
-        {transcript.words.map((word, i) => (
+        {words.map((word, i) => (
           <button
             onClick={() => {
               if (seekTo) {

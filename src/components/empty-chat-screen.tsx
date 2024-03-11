@@ -43,7 +43,7 @@ export function EmptyScreen({
   const handleStartConversation = async (e: React.MouseEvent) => {
     e.preventDefault();
     const id = v4();
-    await createConversation({ id: id as string });
+    await createConversation({ id: id });
     router.push(`/chats/${id}`);
     submitMessage(`Let's start something new`);
   };

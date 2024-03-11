@@ -8,8 +8,8 @@ import { cookies } from 'next/headers';
 import { generateVoiceover } from '@/lib/ai/generateVoiceover';
 import generateTranscript from '@/lib/ai/generateTranscript';
 import { remapTranscript } from '@/lib/utils';
-import { VOICEMODELS } from '@/lib/validators/voicemodel';
-import { Transcript } from 'assemblyai';
+import { type VOICEMODELS } from '@/lib/validators/voicemodel';
+import { type Transcript } from 'assemblyai';
 import { createInsertSchema } from 'drizzle-zod';
 
 export const voiceoverSchema = createInsertSchema(voiceovers).partial();
@@ -94,11 +94,11 @@ export const voiceoverRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const id = input.id;
-      const url = input.url as string;
+      const url = input.url;
 
       const fullTranscript = (await generateTranscript({
         voiceoverUrl: url,
-      })) as Transcript;
+      }))!;
       const transcript = remapTranscript(fullTranscript);
       const duration = fullTranscript.audio_duration || 0;
 
