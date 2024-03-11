@@ -1,8 +1,8 @@
-import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
-import Link from "next/link";
-import { Button } from "../ui/button";
-import ProfileButton from "./ProfileButton";
+import { createClient } from '@/utils/supabase/server';
+import { cookies } from 'next/headers';
+import Link from 'next/link';
+import { Button } from '../ui/button';
+import ProfileButton from './profile-button';
 
 const AuthComponent = async () => {
   const supabase = createClient(cookies());
@@ -15,7 +15,7 @@ const AuthComponent = async () => {
     <ProfileButton user={user} />
   ) : (
     <div className="hidden items-center gap-2 sm:flex">
-      <Link href={"/login"} className="w-full sm:w-auto">
+      <Link href={'/login'} className="w-full sm:w-auto">
         <Button variant="secondary" size="sm" className="w-full">
           Log In
         </Button>

@@ -1,6 +1,6 @@
-import React from "react";
-import Navbar from "@/components/navbar/Navbar";
-import AuthComponent from "@/components/navbar/AuthComponent";
+import React from 'react';
+import Navbar from '@/components/navbar/navbar';
+import AuthComponent from '@/components/navbar/auth-component';
 
 const RootLayout: React.FC<{ children: React.ReactNode }> = async ({
   children,

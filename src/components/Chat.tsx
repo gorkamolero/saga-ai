@@ -5,7 +5,7 @@ import { ChatInput } from './chat-input';
 import { useEffect, useRef } from 'react';
 import { useActions, useUIState } from 'ai/rsc';
 import { AI } from '@/app/action';
-import { EmptyScreen } from './EmptyChatScreen';
+import { EmptyScreen } from './empty-chat-screen';
 import { ChatList } from './chat-list';
 import { useParams } from 'next/navigation';
 

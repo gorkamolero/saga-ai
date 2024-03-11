@@ -1,10 +1,10 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useParams } from 'next/navigation';
-import { VisualAssetInterface } from '@/components/visual-assets';
+import { Editor } from '@/components/editor';
 import { api } from '@/trpc/react';
 import type { VideoType } from '@/server/api/routers/videos';
-import { Suspense } from 'react';
 import { VoiceoverType } from '@/server/api/routers/voiceovers';
 
 export type FullVideoType = VideoType & {
@@ -21,7 +21,7 @@ const VideoPage = () => {
 
   return (
     <Suspense fallback="Loading...">
-      <VisualAssetInterface video={video as FullVideoType} />
+      <Editor video={video as FullVideoType} />
     </Suspense>
   );
 };

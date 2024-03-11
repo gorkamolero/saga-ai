@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
 import { Plus, PlusCircle, PlayCircle, Wand } from 'lucide-react';
@@ -23,7 +23,7 @@ const PANEL_DEFAULT_SIZES = {
   footerHeight: '6rem',
 };
 
-export const VisualAssetInterface = ({ video }: { video: FullVideoType }) => {
+export const Editor = ({ video }: { video: FullVideoType }) => {
   const [isVideoVisible, setIsVideoVisible] = useState(false);
   const hasAssets = video?.visualAssets.length > 0;
 

@@ -1,9 +1,8 @@
 'use client';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { XMarkIcon, Bars3Icon } from '@heroicons/react/24/solid';
-import Sparkles from 'react-sparkle';
-import { DarkModeToggle } from '@/components/DarkModeToggle';
+import { DarkModeToggle } from '@/components/dark-mode-toggle';
 import { api } from '@/trpc/react';
 import { Button } from '../ui/button';
 
@@ -35,7 +34,7 @@ const Navbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               {user?.ideasCount && user?.ideasCount > 0 ? (
                 <Link
                   href={'/ideas'}
-                  className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+                  className={` text-sm inline-flex h-10 w-full items-center px-4 py-2 text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
                 >
                   Ideas
                 </Link>
@@ -43,7 +42,7 @@ const Navbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               {user?.writersCount && user?.writersCount > 0 ? (
                 <Link
                   href={'/writers'}
-                  className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+                  className={` text-sm inline-flex h-10 w-full items-center px-4 py-2 text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
                 >
                   Writers
                 </Link>
@@ -51,7 +50,7 @@ const Navbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               {user?.scriptsCount && user?.scriptsCount > 0 ? (
                 <Link
                   href={'/scripts'}
-                  className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+                  className={` text-sm inline-flex h-10 w-full items-center px-4 py-2 text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
                 >
                   Scripts
                 </Link>
@@ -59,7 +58,7 @@ const Navbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               {user?.voiceoversCount && user?.voiceoversCount > 0 ? (
                 <Link
                   href={'/voiceovers'}
-                  className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+                  className={` text-sm inline-flex h-10 w-full items-center px-4 py-2 text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
                 >
                   Voiceovers
                 </Link>
@@ -68,7 +67,7 @@ const Navbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <Button asChild variant="ghost">
                   <Link
                     href={'/videos'}
-                    className={` inline-flex h-10 w-full items-center px-4 py-2 text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+                    className={` text-sm inline-flex h-10 w-full items-center px-4 py-2 text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
                   >
                     Videos
                   </Link>
@@ -119,7 +118,7 @@ const MobileMenu: React.FC<{
             key={index}
             href={route.href}
             onClick={toggleMenu}
-            className={`inline-flex h-10 w-full items-center text-sm text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
+            className={`text-sm inline-flex h-10 w-full items-center text-muted-foreground transition-colors hover:text-accent-foreground sm:w-auto`}
           >
             {route.title}
           </Link>
