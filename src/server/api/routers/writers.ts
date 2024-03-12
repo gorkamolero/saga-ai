@@ -7,14 +7,14 @@ import { eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
 
 export const writerRouter = createTRPCRouter({
-  getWriters: privateProcedure.query(async ({ ctx }) => {
+  getAll: privateProcedure.query(async ({ ctx }) => {
     const getwriters = await ctx.db.query.writers.findMany({
       where: eq(writers.userId, ctx.user.id),
     });
     return getwriters;
   }),
 
-  getWriter: privateProcedure
+  get: privateProcedure
     .input(
       z.object({
         id: z.string(),

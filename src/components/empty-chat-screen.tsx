@@ -94,6 +94,15 @@ export function EmptyScreen({
                 <ArrowRight className="mr-2 text-muted-foreground" />
                 Continue your conversation
               </Button>
+
+              <Button
+                variant="link"
+                className="h-auto p-0 text-base"
+                onClick={() => submitMessage('Show me my content')}
+              >
+                <ArrowRight className="mr-2 text-muted-foreground" />
+                Show me my content
+              </Button>
             </>
           )}
         </div>

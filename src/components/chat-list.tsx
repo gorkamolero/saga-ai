@@ -7,7 +7,7 @@ export function ChatList({ messages }: { messages: any[] }) {
 
   return (
     <ul
-      className="flex max-w-lg flex-col space-y-4 p-6"
+      className="flex flex-col space-y-4 p-6"
       style={{
         paddingBottom: 'var(--chat-input-height)',
       }}

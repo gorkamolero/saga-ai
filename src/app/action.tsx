@@ -6,7 +6,11 @@ import { z } from 'zod';
 import { api } from '@/trpc/server';
 import { LoadingSpinner } from '@/components/ui/spinner';
 import { AiMessage } from '@/components/ui/ai-message';
-import { runAsyncFnWithoutBlocking, runOpenAICompletion } from '@/lib/utils';
+import {
+  cn,
+  runAsyncFnWithoutBlocking,
+  runOpenAICompletion,
+} from '@/lib/utils';
 import { saveIdea } from '@/lib/ai/actions/saveIdea';
 import { type ChatCompletionUserMessageParam } from 'openai/resources/index.mjs';
 import { scriptwriter } from '@/lib/prompts/scriptwriter';
@@ -18,6 +22,8 @@ import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { Redirector } from '@/components/llm/redirector';
 import { AiMarkdownMessage } from '@/components/ui/ai-markdown-message';
+import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
+import { HeaderSkeleton } from '@/components/ui/header-skeleton';
 
 // const isBravura = false;
 
@@ -70,6 +76,7 @@ Your style of conversation is short, masculine, to the point. You write like Ern
 Messages inside [] means that it's a UI element or a user event. For example:
 - "[The user has created an idea with title x or y]" means that the user and you have come up with an idea to develop.
 
+If the user asks to see their content, ask what type of content (ideas / scripts / writers / videos / voiceovers) and call "fetch_user_content" to display the content to the user.
 If the user wants to continue a conversation, that means to recall their project or idea or script, and you call "recall_project" to allow the user to recall their project and this will feed you the full project.
 
 If the user has an idea, display it back to them with your own title and description and ASK IF IT'S OK, to modify or save it.
@@ -98,6 +105,17 @@ Besides that, you can also chat with users and help him develop his ideas if nee
       { role: 'user', content: message },
     ],
     functions: [
+      {
+        name: 'fetch_user_content',
+        description: 'Display content to the user',
+        parameters: z.object({
+          contentType: z
+            .string()
+            .describe(
+              'The type of content to display. Could be ideas, scripts, writers, videos, voiceovers...',
+            ),
+        }),
+      },
       {
         name: 'save_idea',
         description: 'Display the video idea back to the user',
@@ -181,6 +199,110 @@ Besides that, you can also chat with users and help him develop his ideas if nee
       const aiStateNow = aiState.get();
       aiState.done([...aiStateNow, { role: 'assistant', content }]);
     }
+  });
+
+  completion.onFunctionCall('fetch_user_content', async ({ contentType }) => {
+    reply.update(
+      <AiMessage>
+        <LoadingSpinner />
+      </AiMessage>,
+    );
+
+    type ItemType = {
+      title: string;
+      description: string;
+      id: string;
+    };
+
+    let items = [] as ItemType[];
+    let cardsize = 'small';
+
+    if (contentType === 'ideas') {
+      const ideas = await api.ideas.getAll.query();
+      if (ideas) {
+        items = ideas.map((idea) => ({
+          title: idea.title ?? '',
+          description: idea.description ?? '',
+          id: idea.id,
+        }));
+      }
+    }
+
+    if (contentType === 'scripts') {
+      const scripts = await api.scripts.getAll.query();
+      if (scripts) {
+        items = scripts.map((script) => ({
+          title: script.idea.title ?? '',
+          description: script.content ?? '',
+          id: script.id ?? '',
+        }));
+        cardsize = 'large';
+      }
+    }
+
+    if (contentType === 'writers') {
+      const writers = await api.writers.getAll.query();
+      if (writers) {
+        items = writers.map((writer) => ({
+          title: writer.style ?? '',
+          description: '',
+          id: writer.id,
+        }));
+      }
+    }
+
+    reply.done(
+      <div className="mb-8 flex w-screen flex-col gap-2 overflow-hidden px-8">
+        <div className="relative flex h-auto w-full flex-col  overflow-hidden ">
+          <BentoGrid
+            horizontal
+            className={cn(cardsize === 'large' && 'grid-rows-3 gap-12')}
+          >
+            {items.map((item, i) => (
+              <>
+                <label key={i} className="flex-shrink-0 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="content"
+                    value={item.id}
+                    className="sr-only"
+                  />
+                  <BentoGridItem
+                    key={i}
+                    title={item.title}
+                    description={item.description}
+                    header={<HeaderSkeleton />}
+                    horizontal
+                    className={cn(
+                      i === 3 || i === 6 ? 'md:row-span-2' : '',
+                      cardsize === 'large' && 'w-[32rem]',
+                    )}
+                  />
+                </label>
+              </>
+            ))}
+          </BentoGrid>
+        </div>
+      </div>,
+    );
+
+    const aiStateNow = aiState.get();
+    const aiStateUpdate = [
+      ...aiStateNow,
+      {
+        role: 'function',
+        name: 'fetch_user_content',
+        content: `[Displayed ${contentType} to the user]`,
+      },
+      {
+        role: 'assistant',
+        content: `Here are some ${contentType} I found. Would you like to continue?`,
+      },
+    ] as any;
+    await api.conversations.updateAiState.mutate({
+      id: conversationId,
+      aiState: aiStateUpdate,
+    });
   });
 
   completion.onFunctionCall('save_idea', async ({ title, description }) => {

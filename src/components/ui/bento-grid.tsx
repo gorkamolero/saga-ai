@@ -3,18 +3,25 @@ import { cn } from '@/lib/utils';
 export const BentoGrid = ({
   className,
   children,
+  horizontal = false,
 }: {
   className?: string;
   children?: React.ReactNode;
+  horizontal?: boolean;
 }) => {
   return (
-    <div
-      className={cn(
-        'md:auto-rows mx-auto grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-3 ',
-        className,
-      )}
-    >
-      {children}
+    <div className="overflow-x-auto overscroll-x-contain scroll-smooth">
+      <div
+        className={cn(
+          'mx-auto grid max-w-7xl gap-4',
+          horizontal
+            ? 'h-full snap-x auto-cols-max grid-flow-col grid-rows-2'
+            : 'md:auto-rows grid-cols-1 md:grid-cols-3',
+          className,
+        )}
+      >
+        {children}
+      </div>
     </div>
   );
 };
@@ -25,17 +32,20 @@ export const BentoGridItem = ({
   description,
   header,
   icon,
+  horizontal = false,
 }: {
   className?: string;
   title?: string | React.ReactNode;
   description?: string | React.ReactNode;
   header?: React.ReactNode;
   icon?: React.ReactNode;
+  horizontal?: boolean;
 }) => {
   return (
     <div
       className={cn(
         'group/bento row-span-1 flex flex-col justify-between space-y-4 rounded-xl border border-transparent bg-white p-4 shadow-input transition duration-200 hover:shadow-xl dark:border-white/[0.2] dark:bg-black dark:shadow-none',
+        horizontal ? 'h-full w-80 snap-center' : '',
         className,
       )}
     >

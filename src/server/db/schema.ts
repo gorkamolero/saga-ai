@@ -79,6 +79,10 @@ export const ideas = createTable('ideas', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+export const ideaRelations = relations(ideas, ({ one, many }) => ({
+  scripts: many(scripts),
+}));
+
 export const writers = createTable('writers', {
   id: uuid('id').primaryKey(),
   userId: uuid('user_id').references(() => users.id),
@@ -112,9 +116,13 @@ export const scripts = createTable('scripts', {
   videoId: uuid('video_id'),
 });
 
-export const scriptRelations = relations(scripts, ({ one, many }) => ({
-  writers: one(writers),
-  videos: one(videos),
+export const scriptsRelations = relations(scripts, ({ one, many }) => ({
+  writer: one(writers),
+  video: one(videos),
+  idea: one(ideas, {
+    fields: [scripts.ideaId],
+    references: [ideas.id],
+  }),
 }));
 
 export const voiceovers = createTable('voiceovers', {

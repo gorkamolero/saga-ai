@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import { conversations, scripts, users } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { Script } from '@/lib/validators/scripts';
+import { Idea } from '@/lib/validators';
 
 const updateScriptSchema = z.object({
   id: z.string(),
@@ -11,7 +13,18 @@ const updateScriptSchema = z.object({
 });
 
 export const scriptRouter = createTRPCRouter({
-  createScript: privateProcedure
+  getAll: privateProcedure.query(async ({ ctx }) => {
+    const getScripts = await ctx.db.query.scripts.findMany({
+      where: eq(scripts.userId, ctx.user.id),
+      with: {
+        idea: true,
+      },
+    });
+    return getScripts as (Script & {
+      idea: Idea;
+    })[];
+  }),
+  create: privateProcedure
     .input(
       z.object({
         id: z.string(),
@@ -21,13 +34,13 @@ export const scriptRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const content = input.script;
       const wordCount = content.split(' ').length;
-      const createscript = await ctx.db.insert(scripts).values({
+      const create = await ctx.db.insert(scripts).values({
         id: input.id,
         content,
         wordCount,
         userId: ctx.user.id,
       });
-      return createscript;
+      return create;
     }),
 
   createOrUpdate: privateProcedure
@@ -69,7 +82,7 @@ export const scriptRouter = createTRPCRouter({
       const writerId = conversation?.writerId || conversation?.id;
       if (!writerId) throw new Error('Writer not found');
 
-      const createscript = await ctx.db
+      const create = await ctx.db
         .insert(scripts)
         .values({
           id: input.id,
@@ -85,7 +98,7 @@ export const scriptRouter = createTRPCRouter({
         .update(conversations)
         .set({ scriptId: input.id })
         .where(eq(conversations.id, currentConversationId));
-      return createscript[0];
+      return create[0];
     }),
 
   getScripts: privateProcedure.query(async ({ ctx }) => {
