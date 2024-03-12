@@ -44,6 +44,12 @@ export const writerRouter = createTRPCRouter({
           userId: ctx.user.id,
           style: input.style,
         })
+        .onConflictDoUpdate({
+          target: [writers.id],
+          set: {
+            style: input.style,
+          },
+        })
         .returning();
       return createwriter[0];
     }),

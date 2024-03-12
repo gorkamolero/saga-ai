@@ -9,7 +9,7 @@ interface ChatScrollAnchorProps {
 }
 
 export function ChatScrollAnchor({ trackVisibility }: ChatScrollAnchorProps) {
-  const isAtBottom = useAtBottom();
+  const isAtBottom = useAtBottom(40);
   const { ref, entry, inView } = useInView({
     trackVisibility,
     delay: 100,

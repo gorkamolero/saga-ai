@@ -92,15 +92,17 @@ If you want to save an idea, call the "save_idea" function to allow the user to 
 
 If the user wants to write the script and you haven't been provided a style, you need to define a style for it yourself and propose it and ASK THE USER IF THAT'S OK. Ask them and when you're in agreement, call the "define_style" function to allow them to save it.
 
+The next step is to define a duration for the video. Sometimes the user will want a YouTube short and sometimes he won't care.
+
 The next step is to write a script, with the following instructions: ${scriptwriter} and display it to them and ASK IF THEY LIKE IT. When the user likes it and you are done modifying it, call the "save_generated_script" function to allow the user to save it.
 
 It can also happen that the user brings a script with them. In this case, go directly to the "save_user_script" function to save it.
 
-The next step is to generate a voiceover. You can call the "generate_voiceover" function to allow this.
+The next step is to generate a voiceover. You can call the "generate_voiceover" function to allow this. You will receive a transcript and you have to look into it in the next step.
 
-When this is done, ask the user if they want to generate visual assets for the project. If they want you to propose them, YOU ENTER INTO ARCHITECT MODE ${modernArchitect}
+When the transcript is done, ask the user if they want to generate visual assets for the project. If they want you to propose them, YOU ENTER INTO ARCHITECT MODE ${modernArchitect}
 
-When you're done, call the "generate_assets" function to save for the user, with the exact timings you agreed upon for each asset.
+When you're done, call the "save_assets" function to save for the user, with the exact timings you agreed upon for each visual asset.
 
 Besides that, you can also chat with users and help him develop his ideas if needed.
 `,
@@ -160,22 +162,35 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         parameters: z.object({}),
       },
       {
-        name: 'generate_assets',
+        name: 'save_assets',
         description: 'Generate assets for the user',
         parameters: z.object({
           assets: z.array(
             z.object({
               description: z
                 .string()
-                .describe('The detailed description of the asset'),
+                .describe(
+                  'The detailed description of the visual asset, in a very specific format to be fed as a prompt to an AI visual generation tool like DALL-E',
+                ),
               start: z
                 .number()
-                .describe('The agreed upon start time of the asset'),
-              end: z.number().describe('The agreed upon end time of the asset'),
-              wordIndex: z
+                .describe(
+                  `The start time of the scene, corresponding to an exact word's start in the transcript`,
+                ),
+              end: z
                 .number()
                 .describe(
-                  'The corresponding word index of the asset in the transcript',
+                  `The end time of the scene, corresponding to an exact word's end in the transcript`,
+                ),
+              startWordIndex: z
+                .number()
+                .describe(
+                  'The corresponding word index in the transcript for the start time of the visual asset',
+                ),
+              endWordIndex: z
+                .number()
+                .describe(
+                  'The corresponding word index in the transcript for the end time of the visual asset',
                 ),
             }),
           ),
@@ -500,7 +515,9 @@ Besides that, you can also chat with users and help him develop his ideas if nee
 
     reply.update(
       <AiMessage>
-        <LoadingSpinner /> Generating voiceover
+        <div className="flex gap-2">
+          <LoadingSpinner /> Generating voiceover
+        </div>
       </AiMessage>,
     );
 
@@ -537,13 +554,15 @@ Besides that, you can also chat with users and help him develop his ideas if nee
       }
 
       reply.update(
-        <>
+        <div className="grid gap-2">
           <AiMessage>Here's your voiceover</AiMessage>
           <VoiceoverResult url={voiceover?.url} />
           <AiMessage>
-            <LoadingSpinner /> Transcribing your voiceover...
+            <div className="flex gap-2">
+              <LoadingSpinner /> Transcribing your voiceover...
+            </div>
           </AiMessage>
-        </>,
+        </div>,
       );
 
       let aiStateUpdate = [
@@ -562,6 +581,10 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         url: voiceover.url,
       });
 
+      const stringifiedTranscript = JSON.stringify(transcript);
+
+      console.log('transcript', stringifiedTranscript);
+
       await api.conversations.updateCurrent.mutate({
         voiceoverId: voiceover?.id,
       });
@@ -576,7 +599,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         },
         {
           role: 'system',
-          content: `[The transcript generated: ${JSON.stringify(transcript)}]`,
+          content: `[The transcript generated, with every words start and end times in milliseconds. You will use these to generating visual assets: ${JSON.stringify(transcript)}]`,
         },
         {
           role: 'assistant',
@@ -591,7 +614,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
       aiState.done(aiStateUpdate);
 
       reply.done(
-        <>
+        <div className="grid gap-2">
           <AiMessage>Here's your voiceover</AiMessage>
           <VoiceoverResult url={voiceover?.url} />
           <AiMessage>
@@ -602,12 +625,12 @@ Besides that, you can also chat with users and help him develop his ideas if nee
               assets for the project or simply go to the editing interface?
             </p>
           </AiMessage>
-        </>,
+        </div>,
       );
     });
   });
 
-  completion.onFunctionCall('generate_assets', async ({ assets }) => {
+  completion.onFunctionCall('save_assets', async ({ assets }) => {
     reply.update(
       <AiMessage>
         <LoadingSpinner /> Generating visual assets
@@ -640,12 +663,12 @@ Besides that, you can also chat with users and help him develop his ideas if nee
       ...aiStateNow,
       {
         role: 'function',
-        name: 'generate_assets',
-        content: `[Generated visual assets for the user's video and displayed UI]`,
+        name: 'save_assets',
+        content: `[Saved visual assets for user's video and displayed UI]`,
       },
       {
         role: 'assistant',
-        content: `The visual assets have been generated successfully. You can view them now. Would you like to generate the video?`,
+        content: `Your visual asset map have been saved. Would you like to generate the video?`,
       },
     ] as any;
     await api.conversations.updateAiState.mutate({
@@ -656,15 +679,6 @@ Besides that, you can also chat with users and help him develop his ideas if nee
 
     reply.done(
       <>
-        <AiMessage>
-          <div className="grid grid-cols-2 gap-4">
-            {mappedAssets.map((asset) => (
-              <Card key={asset.description} className="aspect-square p-4">
-                {asset.description}
-              </Card>
-            ))}
-          </div>
-        </AiMessage>
         <AiMessage>
           <p>
             The visual assets have been generated successfully. You can view

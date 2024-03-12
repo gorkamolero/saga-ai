@@ -3,7 +3,7 @@ import parseJson from 'parse-json';
 import { type TranscriptType } from '../validators/transcript';
 import { visualAssetSchema } from '@/server/api/routers/assets';
 import { architect } from '../prompts/architect';
-import { bravura, openai } from '@/app/action';
+import { openai } from '@/app/action';
 import { type VisualAssetType } from '../validators/visual-assets';
 
 export const mapNewAssets = ({
@@ -11,7 +11,8 @@ export const mapNewAssets = ({
   start,
   end,
   index,
-  wordIndex,
+  startWordIndex,
+  endWordIndex,
   userId,
   videoId,
 }: {
@@ -19,7 +20,8 @@ export const mapNewAssets = ({
   start: number;
   end: number;
   index: number;
-  wordIndex: number;
+  startWordIndex: number;
+  endWordIndex: number;
   userId: string;
   videoId: string;
 }): VisualAssetType =>
@@ -32,7 +34,8 @@ export const mapNewAssets = ({
     start,
     end,
     index,
-    wordIndex,
+    startWordIndex,
+    endWordIndex,
   });
 
 const instructions =
@@ -102,7 +105,8 @@ export const generateAssets = async ({
         description: asset.description,
         start: asset.start,
         end: asset.end,
-        wordIndex: asset.wordIndex ?? 0,
+        startWordIndex: asset.startWordIndex ?? 0,
+        endWordIndex: asset.endWordIndex ?? 0,
         index: index + 1,
         userId,
         videoId,

@@ -176,13 +176,26 @@ export function generateEffectFilter({
 }
 
 export const getDurationInFrames = (
-  image: VisualAssetType,
+  visualAsset: VisualAssetType,
   fps: number,
   isLast: boolean,
 ) => {
-  const start = image.start!;
-  const end = isLast ? image.end! + 2 : image.end! + 1;
-  return Math.round((end - start) * fps) + fps;
+  if (
+    visualAsset.start == undefined ||
+    visualAsset.start === null ||
+    !visualAsset.end
+  ) {
+    throw new Error('Visual asset must have start and end');
+  }
+  const startInMS = visualAsset.start;
+  const endInMS = visualAsset.end;
+
+  const start = convertMsToFrames(startInMS, fps);
+  const end = isLast
+    ? convertMsToFrames(endInMS, fps) + fps
+    : convertMsToFrames(endInMS, fps) + 1;
+
+  return Math.round(end - start) + fps;
 };
 
 export function convertMsToFrames(ms: number, fps: number) {

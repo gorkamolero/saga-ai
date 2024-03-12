@@ -10,7 +10,7 @@ import { EditorProvider } from '@/components/editor/editor-context';
 import { TranscriptDisplay } from '@/components/editor/transcript-display';
 import { RemotionPlayer } from './editor/remotion-player';
 import { type WordType } from '@/lib/validators/words';
-import { AssetSelector } from './editor/asset-selector';
+import { AssetGrid } from './editor/asset-grid';
 
 const PANEL_DEFAULT_SIZES = {
   video: 34,
@@ -53,7 +53,7 @@ export const Editor = ({ video }: { video: FullVideoType }) => {
             <PanelResizeHandle className="border-l" />
 
             <Panel defaultSize={PANEL_DEFAULT_SIZES.assets} className="h-full">
-              <AssetSelector assets={video?.visualAssets} video={video} />
+              <AssetGrid assets={video?.visualAssets} video={video} />
             </Panel>
           </PanelGroup>
         </div>

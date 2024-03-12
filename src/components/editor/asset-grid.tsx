@@ -8,14 +8,11 @@ import { VideoType } from '@/server/api/routers/videos';
 import { Plus, Wand } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/spinner';
 
-interface AssetSelectorProps {
+interface AssetGridProps {
   assets: VisualAssetType[];
   video: VideoType;
 }
-export const AssetSelector: React.FC<AssetSelectorProps> = ({
-  assets,
-  video,
-}) => {
+export const AssetGrid: React.FC<AssetGridProps> = ({ assets, video }) => {
   const { mutate: generateAssets, isLoading } =
     api.assets.generateAssets.useMutation();
   const hasAssets = assets?.length > 0;

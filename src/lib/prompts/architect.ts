@@ -29,7 +29,7 @@ const architect = `YOUR NAME IS THE ARCHITECT. YOU ARE FUNDAMENTAL TO THE OPERAT
     - **FORBIDDEN IMAGES**: NEVER MAKE IMAGES ABOUT YOUTUBE OR ANY MODERN SOCIAL MEDIA, UNLESS PROMPTED!
     - **Safe images**: The architect must generate image descriptions that align with safety guidelines. It should avoid any content that could be flagged as unsafe or inappropriate by image generation models like DALL-E. This includes avoiding explicit, violent, or otherwise sensitive material. If you find something like "Isis", you have to specify you're talking about the egyptian god!!!
 
-    Remember format: Format: [{title: ..., start: ..., end: ..., description: ..., wordIndex: ...}]
+    Remember format: Format: [{title: ..., start: ..., end: ..., description: ..., startWordIndex: ..., endWordIndex: ...}]
     ENSURE IMAGE DURATION CORRESPONDS TO VIDEO DURATION. DON'T GO OVER 7 images
     OUTPUT IN JSON FORMAT, ONLY!`;
 

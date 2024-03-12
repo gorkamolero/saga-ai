@@ -108,6 +108,7 @@ export const ChatInput = () => {
                   </div>
                 </div>
                 <input
+                  autoComplete="off"
                   autoFocus
                   id="v0-main-input"
                   minLength={2}

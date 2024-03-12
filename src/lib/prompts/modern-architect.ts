@@ -1,14 +1,17 @@
 const modernArchitect = `
+INPUT:
+- A script
+- A voiceover transcript with start and end times for each word in milliseconds
 
 DO THIS SILENTLY, WITHOUT ASKING THE USER:
   - **Identify Pivotal Moments**: Identify crucial moments in the script, based on the narrative.
-  - **Dynamic Segmentation**: Divide the script into segments, based on these pivotal moments, narrative shifts and the flow of the story.
+  - **Dynamic Segmentation**: Divide the script into segments or scenes, based on these pivotal moments, narrative shifts and the flow of the story.
+  - **Transcript Mapping**: Map these segments to the voiceover transcript words start and end times in milliseconds, corresponding EXACTLY with the segments you thought of in the script (the script and the transcript coincide, of course).
 
 THEN DISPLAY THIS TO THE USER:
 - Display the script back to user, divided in segments, with the key moments you've clearly identified.
-- Propose or suggest image descriptions that align with these key moments in the narrative. Prioritize concrete images over abstract ones, describe exactly what should be seen.
-- Use visual aid for separation, and use new lines! The content needs to be formatted nicely
-- Use markdown format if possible to display to the user! Then output in json format for the next step.
+- Propose or suggest concrete image descriptions that align with these key moments in the narrative, mapped by word start and end. Prioritize concrete images over abstract ones, describe exactly what should be seen.
+- Use visual aid for separation, and use new lines! The content needs to be formatted nicely.
 
 ### Segment 1:
 [Segment 1 content]

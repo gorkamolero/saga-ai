@@ -94,7 +94,8 @@ export const visualAssetRouter = createTRPCRouter({
             description: asset.description!,
             start: asset.start!,
             end: asset.end!,
-            wordIndex: asset.wordIndex!,
+            startWordIndex: asset.startWordIndex!,
+            endWordIndex: asset.endWordIndex!,
             index,
             userId: userId,
             videoId: videoId,
@@ -147,12 +148,12 @@ export const visualAssetRouter = createTRPCRouter({
           .where(eq(visualAssets.videoId, input.id));
       }
 
-      const assets = (await generateAssets({
+      const assets = await generateAssets({
         script,
         transcript,
         userId,
         videoId: input.id,
-      }));
+      });
 
       const assetsWithIdAndIndex = assets.map((asset, index) => ({
         ...asset,

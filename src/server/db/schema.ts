@@ -170,7 +170,8 @@ export const visualAssets = createTable('visual_assets', {
   animation: text('animation'),
   animatedAt: timestamp('animated_at'),
   index: integer('index'),
-  wordIndex: integer('word_index'),
+  startWordIndex: integer('start_word_index'),
+  endWordIndex: integer('end_word_index'),
 });
 
 export const videos = createTable('videos', {

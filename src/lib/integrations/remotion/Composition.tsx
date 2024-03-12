@@ -9,7 +9,6 @@ import {
   useCurrentFrame,
   AbsoluteFill,
   Audio,
-  Video,
   OffthreadVideo,
 } from 'remotion';
 
@@ -67,7 +66,7 @@ export const Tubesleuth: React.FC<TubesleuthProps> = ({
           accumulatedFrames += durationInFrames - fps;
 
           return (
-            <>
+            <React.Fragment key={asset.id}>
               <TransitionSeries.Sequence durationInFrames={durationInFrames}>
                 {asset?.animation ? (
                   <OffthreadVideo src={asset?.animation} />
@@ -84,7 +83,7 @@ export const Tubesleuth: React.FC<TubesleuthProps> = ({
                 presentation={fade()}
                 timing={linearTiming({ durationInFrames: 30 })}
               />
-            </>
+            </React.Fragment>
           );
         })}
       </TransitionSeries>
