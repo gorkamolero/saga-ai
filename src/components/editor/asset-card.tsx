@@ -1,8 +1,8 @@
 'use client';
 import React, { useContext } from 'react';
 import { type VisualAssetType } from '@/server/api/routers/assets';
-import { cn, formatTime } from '@/lib/utils';
-import { AssetSelectDialog } from './asset-select';
+import { cn } from '@/lib/utils';
+import { SearchOpenImagesDialog } from './search-open-images-dialog';
 import { Button } from '../ui/button';
 import { EditorContext } from './editor-context';
 import { Edit, Image, Save, Video, Wand } from 'lucide-react';
@@ -53,9 +53,9 @@ export const AssetCard = ({
   return (
     <div className="h-full w-full">
       <Card
-        className={`text-sm group h-full rounded-lg border border-gray-200 p-4 text-left text-gray-500 shadow-sm ${isSelected ? 'shadow-lg' : ''}`}
+        className={`text-sm group h-full rounded-lg border border-gray-200 text-left text-gray-500 shadow-sm ${isSelected ? 'shadow-xl' : ''}`}
       >
-        <CardContent className="flex h-full flex-col gap-2">
+        <CardContent className="flex h-full flex-col gap-2 pt-8">
           {asset.animation ? (
             <video
               src={asset.animation}
@@ -153,7 +153,7 @@ export const AssetCard = ({
               </Button>
             ) : null}
 
-            <AssetSelectDialog
+            <SearchOpenImagesDialog
               trigger={
                 <Button
                   variant="outline"

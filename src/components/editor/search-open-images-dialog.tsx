@@ -1,22 +1,20 @@
-import { Button } from '@/components/ui/button';
 import {
   DialogTrigger,
   DialogTitle,
   DialogDescription,
   DialogHeader,
-  DialogFooter,
   DialogContent,
   Dialog,
 } from '@/components/ui/dialog';
 import { UnsplashImageSearch } from '../assets/unsplash-image-search';
 
-export function AssetSelectDialog({
+export const SearchOpenImagesDialog = ({
   trigger,
   assetId,
 }: {
   trigger: React.ReactNode;
   assetId: string;
-}) {
+}) => {
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -31,4 +29,4 @@ export function AssetSelectDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};

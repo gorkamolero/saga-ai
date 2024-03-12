@@ -8,8 +8,11 @@ import { convertSecondsToFrames } from '@/lib/utils/animations';
 import { type TranscriptType } from '@/lib/validators/transcript';
 import { type VisualAssetType } from '@/lib/validators/visual-assets';
 import { Player } from '@remotion/player';
+import { useContext } from 'react';
+import { EditorContext } from './editor-context';
 
 export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
+  const { playerRef, togglePlay } = useContext(EditorContext);
   const transcript = video?.voiceover?.transcript as TranscriptType;
   const assets = video?.visualAssets.sort(
     (a: any, b: any) => a.index - b.index,
@@ -44,13 +47,14 @@ export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
   };
 
   return (
-    <div className="flex h-full w-full items-center justify-center p-8">
+    <div className="flex h-full w-full items-center justify-center bg-black/80 p-4 transition-colors hover:bg-black">
       <div
         className="flex w-full flex-col items-center justify-center"
         style={{ aspectRatio: '9 / 16' }}
+        onClick={togglePlay}
       >
         <Player
-          clickToPlay
+          clickToPlay={false}
           component={Tubesleuth}
           inputProps={inputProps}
           durationInFrames={durationInFrames}
@@ -62,6 +66,7 @@ export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
             aspectRatio: '9/16',
           }}
           initiallyShowControls
+          ref={playerRef}
         />
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { EditorContext } from './editor-context';
 import { type WordType } from '@/lib/validators/words';
+import { cn } from '@/lib/utils';
 
 interface Props {
   words: WordType[];
@@ -11,8 +12,30 @@ const adjustment = 0.1;
 export const TranscriptDisplay: React.FC<Props> = ({ words }) => {
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
 
-  const { playerRef, seekTo, selectedAsset, saveAsset, currentTime } =
-    useContext(EditorContext);
+  const {
+    playerRef,
+    seekTo,
+    selectedAsset,
+    saveAsset,
+    currentTime,
+    isSelectingAsset,
+  } = useContext(EditorContext);
+
+  // Function to check if a word is within the selected asset's range
+  const isWordInRange = (word: WordType) => {
+    if (
+      !selectedAsset ||
+      selectedAsset.start === undefined ||
+      selectedAsset.end === undefined ||
+      selectedAsset.start === null ||
+      selectedAsset.end === null
+    ) {
+      return false;
+    }
+    const wordStart = word.start / 1000;
+    const wordEnd = word.end / 1000;
+    return wordStart >= selectedAsset?.start && wordEnd <= selectedAsset?.end;
+  };
 
   useEffect(() => {
     if (!playerRef || !playerRef?.current) return;
@@ -76,25 +99,25 @@ export const TranscriptDisplay: React.FC<Props> = ({ words }) => {
   };
 
   return (
-    <div className="grid gap-6">
-      <div className="flex flex-wrap">
-        {words.map((word, i) => (
-          <button
-            onClick={() => {
-              if (seekTo) {
-                seekTo(word.start / 1000);
-              }
-              handleWordClick(word);
-            }}
-            key={i}
-            className={`word mx-1 ${
-              activeWordIndex === i ? 'bg-yellow-200' : ''
-            }`}
-          >
-            {word.text}
-          </button>
-        ))}
-      </div>
+    <div className="flex h-full flex-wrap overflow-y-auto p-4">
+      {words.map((word, i) => (
+        <button
+          onClick={() => {
+            if (seekTo) {
+              seekTo(word.start / 1000);
+            }
+            if (isSelectingAsset) handleWordClick(word);
+          }}
+          key={i}
+          className={cn(
+            'word mx-1',
+            activeWordIndex === i ? 'bg-yellow-200' : '',
+            isWordInRange(word) ? 'bg-green-200' : '',
+          )}
+        >
+          {word.text}
+        </button>
+      ))}
     </div>
   );
 };
