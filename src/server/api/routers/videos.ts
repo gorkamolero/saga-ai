@@ -65,6 +65,7 @@ export const videoRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
+        data: videoSchema.partial().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -92,13 +93,7 @@ export const videoRouter = createTRPCRouter({
 
       const { ideaId, writerId, scriptId, voiceoverId } = conversation;
 
-      if (
-        !ideaId ||
-        !writerId ||
-        !scriptId ||
-        !voiceoverId ||
-        !idea?.description
-      ) {
+      if (!ideaId || !scriptId || !voiceoverId || !idea?.description) {
         throw new Error('Conversation is missing required data');
       }
 
@@ -107,6 +102,8 @@ export const videoRouter = createTRPCRouter({
       });
 
       const duration = voiceover?.duration || 0;
+
+      const otherData = input?.data || {};
 
       await ctx.db
         .insert(videos)
@@ -119,6 +116,7 @@ export const videoRouter = createTRPCRouter({
           voiceoverId,
           description: idea.description,
           duration: duration || 0,
+          ...otherData,
         })
         .onConflictDoNothing()
         .returning();

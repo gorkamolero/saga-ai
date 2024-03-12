@@ -80,6 +80,7 @@ export const ideas = createTable('ideas', {
 });
 
 export const ideaRelations = relations(ideas, ({ one, many }) => ({
+  video: one(videos),
   scripts: many(scripts),
 }));
 
@@ -187,6 +188,9 @@ export const videos = createTable('videos', {
   scriptId: uuid('script_id').references(() => scripts.id),
   voiceoverId: uuid('voiceover_id').references(() => voiceovers.id),
   duration: integer('duration').default(0),
+  type: varchar('type', {
+    length: 10,
+  }),
 });
 
 export const videoRelations = relations(videos, ({ one, many }) => ({

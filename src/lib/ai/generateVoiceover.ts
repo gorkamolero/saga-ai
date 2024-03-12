@@ -9,25 +9,30 @@ export async function generateVoiceover({
   voicemodel?: VOICEMODELS;
 }) {
   try {
-    // Perform text-to-speech conversion
-    const mp3Response = await openai.audio.speech.create({
-      model: 'tts-1',
-      voice: voicemodel,
-      input: script,
-    });
+    const chunkSize = 4095;
+    const scriptChunks = [];
 
-    const arrayBuffer = await mp3Response.arrayBuffer();
+    for (let i = 0; i < script.length; i += chunkSize) {
+      scriptChunks.push(script.substring(i, i + chunkSize));
+    }
 
-    const buffer = Buffer.from(arrayBuffer);
+    const buffers = await Promise.all(
+      scriptChunks.map(async (chunk) => {
+        const mp3Response = await openai.audio.speech.create({
+          model: 'tts-1',
+          voice: voicemodel,
+          input: chunk,
+        });
+        const arrayBuffer = await mp3Response.arrayBuffer();
+        return Buffer.from(arrayBuffer);
+      }),
+    );
 
-    return buffer;
+    return Buffer.concat(buffers);
   } catch (error) {
     console.error('Error in text-to-speech conversion:', error);
-
     throw error;
   }
-
-  // TODO: If duration is too long, redo script
 }
 
 export default generateVoiceover;

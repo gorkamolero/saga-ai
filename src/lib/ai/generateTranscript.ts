@@ -17,6 +17,9 @@ export async function generateTranscript({
 
   try {
     const captions = await client.transcripts.transcribe(config);
+    if (captions.error) {
+      throw captions.error;
+    }
     return captions;
   } catch (error) {
     console.error('Error in audio caption:', error);

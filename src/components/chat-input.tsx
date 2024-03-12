@@ -110,7 +110,6 @@ export const ChatInput = () => {
                 <input
                   autoFocus
                   id="v0-main-input"
-                  maxLength={1000}
                   minLength={2}
                   className="text-sm w-full min-w-[50%] flex-[1_0_50%] resize-none border-0 bg-transparent py-2.5 pr-2 leading-relaxed text-white shadow-none outline-none ring-0 [scroll-padding-block:0.75rem] selection:bg-teal-300 selection:text-black placeholder:text-zinc-400 disabled:bg-transparent disabled:opacity-80 sm:py-3"
                   placeholder="I have an idea..."

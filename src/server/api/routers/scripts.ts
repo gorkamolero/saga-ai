@@ -13,6 +13,18 @@ const updateScriptSchema = z.object({
 });
 
 export const scriptRouter = createTRPCRouter({
+  get: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const getScript = await ctx.db.query.scripts.findFirst({
+        where: eq(scripts.id, input.id),
+      });
+      return getScript;
+    }),
   getAll: privateProcedure.query(async ({ ctx }) => {
     const getScripts = await ctx.db.query.scripts.findMany({
       where: eq(scripts.userId, ctx.user.id),
@@ -90,7 +102,7 @@ export const scriptRouter = createTRPCRouter({
           wordCount,
           userId: ctx.user.id,
           ideaId,
-          writerId,
+          ...(conversation?.writerId && { writerId }),
         })
         .returning();
 

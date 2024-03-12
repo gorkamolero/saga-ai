@@ -23,6 +23,19 @@ export const voiceoverRouter = createTRPCRouter({
     return getvoiceovers;
   }),
 
+  get: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const getvoiceover = await ctx.db.query.voiceovers.findFirst({
+        where: eq(voiceovers.id, input.id),
+      });
+      return getvoiceover;
+    }),
+
   create: privateProcedure
     .input(
       z.object({

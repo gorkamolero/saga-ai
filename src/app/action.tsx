@@ -24,6 +24,8 @@ import { Redirector } from '@/components/llm/redirector';
 import { AiMarkdownMessage } from '@/components/ui/ai-markdown-message';
 import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
 import { HeaderSkeleton } from '@/components/ui/header-skeleton';
+import { ContentCard } from '@/components/content-card';
+import { ScriptForm } from '@/components/script-form';
 
 // const isBravura = false;
 
@@ -37,6 +39,11 @@ export const bravura = new OpenAI({
   defaultHeaders: {
     'X-Title': 'Bravura',
   },
+});
+
+export const lemonfox = new OpenAI({
+  apiKey: process.env.LEMONFOX_API_KEY,
+  baseURL: 'https://api.lemonfox.io/v1',
 });
 
 async function submitUserMessage({
@@ -85,7 +92,9 @@ If you want to save an idea, call the "save_idea" function to allow the user to 
 
 If the user wants to write the script and you haven't been provided a style, you need to define a style for it yourself and propose it and ASK THE USER IF THAT'S OK. Ask them and when you're in agreement, call the "define_style" function to allow them to save it.
 
-The next step is to write a script, with the following instructions: ${scriptwriter} and display it to them and ASK IF THEY LIKE IT. When the user likes it and you are done modifying it, call the "save_script" function to allow the user to save it.
+The next step is to write a script, with the following instructions: ${scriptwriter} and display it to them and ASK IF THEY LIKE IT. When the user likes it and you are done modifying it, call the "save_generated_script" function to allow the user to save it.
+
+It can also happen that the user brings a script with them. In this case, go directly to the "save_user_script" function to save it.
 
 The next step is to generate a voiceover. You can call the "generate_voiceover" function to allow this.
 
@@ -127,11 +136,6 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         }),
       },
       {
-        name: 'display_all_ideas',
-        description: 'Display ALL ideas to the user to choose a script',
-        parameters: z.object({}),
-      },
-      {
         name: 'define_style',
         description: 'Define the writing style of the script',
         parameters: z.object({
@@ -139,21 +143,21 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         }),
       },
       {
-        name: 'save_script',
-        description: 'Save the script for the user',
+        name: 'save_generated_script',
+        description: 'Save the generated script for the user',
         parameters: z.object({
           script: z.string().describe('The script'),
         }),
       },
       {
+        name: 'save_user_script',
+        description: 'Save the user script',
+        parameters: z.object({}),
+      },
+      {
         name: 'generate_voiceover',
         description: 'Generate a voiceover for the user',
-        parameters: z.object({
-          scriptId: z
-            .string()
-            .describe('The unique ID of the script the user has saved'),
-          script: z.string().describe('The script content itself as a string'),
-        }),
+        parameters: z.object({}),
       },
       {
         name: 'generate_assets',
@@ -363,42 +367,6 @@ Besides that, you can also chat with users and help him develop his ideas if nee
     }
   });
 
-  completion.onFunctionCall('display_all_ideas', async () => {
-    reply.update(
-      <AiMessage>
-        <LoadingSpinner />
-      </AiMessage>,
-    );
-
-    await api.conversations.updateAiState.mutate({
-      id: conversationId,
-      aiState: [
-        ...aiState.get(),
-        {
-          role: 'function',
-          name: 'display_idea',
-          content: '',
-        },
-      ],
-    });
-
-    aiState.done([
-      ...aiState.get(),
-      {
-        role: 'function',
-        name: 'display_idea',
-        content: '',
-      },
-    ]);
-
-    reply.done(
-      <AiMessage>
-        <p>Here are some ideas I came up with:</p>
-        <p>1. A story about</p>
-      </AiMessage>,
-    );
-  });
-
   completion.onFunctionCall('define_style', async ({ style }) => {
     const createWriter = await api.writers.create.mutate({
       id: conversationId,
@@ -469,7 +437,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
     );
   });
 
-  completion.onFunctionCall('save_script', async ({ script }) => {
+  completion.onFunctionCall('save_generated_script', async ({ script }) => {
     await api.scripts.createOrUpdate.mutate({
       id: conversationId,
       script,
@@ -480,7 +448,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
       ...aiStateNow,
       {
         role: 'function',
-        name: 'save_script',
+        name: 'save_generated_script',
         content: `[The user has saved the script with the following content: "${script}"]`,
       },
       {
@@ -503,107 +471,141 @@ Besides that, you can also chat with users and help him develop his ideas if nee
     );
   });
 
-  completion.onFunctionCall(
-    'generate_voiceover',
-    async ({ script, scriptId }) => {
-      reply.update(
+  completion.onFunctionCall('save_user_script', async () => {
+    reply.done(
+      <div className="grid gap-2">
+        <ContentCard
+          className="max-w-128 w-full"
+          description={<ScriptForm id={conversationId} />}
+          hoverFx={false}
+        />
+      </div>,
+    );
+
+    const aiStateNow = aiState.get();
+    aiState.done([
+      ...aiStateNow,
+      {
+        role: 'function',
+        name: 'write_script',
+        content: `[UI for writing the script with displayed to the user]`,
+      },
+    ]);
+  });
+
+  completion.onFunctionCall('generate_voiceover', async () => {
+    const script = await api.scripts.get.query({
+      id: conversationId,
+    });
+
+    reply.update(
+      <AiMessage>
+        <LoadingSpinner /> Generating voiceover
+      </AiMessage>,
+    );
+
+    if (!script || !script.content) {
+      reply.done(
         <AiMessage>
-          <LoadingSpinner /> Generating voiceover
+          <p>
+            Sorry, I couldn't generate the voiceover for you. Would you like me
+            to try again?
+          </p>
         </AiMessage>,
       );
+      return;
+    }
 
-      await runAsyncFnWithoutBlocking(async () => {
-        const voiceover = await api.voiceovers.create.mutate({
-          id: conversationId,
-          scriptId,
-          script,
-          voicemodel: 'onyx',
-        });
-
-        if (!voiceover?.id || !voiceover.url) {
-          reply.update(
-            <AiMessage>
-              <p>
-                Sorry, I couldn't generate the voiceover for you. Would you like
-                me to try again?
-              </p>
-            </AiMessage>,
-          );
-          return;
-        }
-
-        reply.update(
-          <>
-            <AiMessage>Here's your voiceover</AiMessage>
-            <VoiceoverResult url={voiceover?.url} />
-            <AiMessage>
-              <LoadingSpinner /> Transcribing your voiceover...
-            </AiMessage>
-          </>,
-        );
-
-        let aiStateUpdate = [
-          ...aiState.get(),
-          {
-            role: 'system',
-            name: 'generate_voiceover',
-            content: `[Generated voiceover with url ${voiceover?.url} for the user's script and displayed UI]`,
-          },
-        ] as any;
-
-        aiState.update(aiStateUpdate);
-
-        const transcript = await api.voiceovers.transcribe.mutate({
-          id: voiceover?.id,
-          url: voiceover.url,
-        });
-
-        await api.conversations.updateCurrent.mutate({
-          voiceoverId: voiceover?.id,
-        });
-
-        const aiStateNow = aiState.get();
-        aiStateUpdate = [
-          ...aiStateNow,
-          {
-            role: 'function',
-            name: 'generate_voiceover',
-            content: `[Voiceover and transcript fully generated successfully for script with ID: ${scriptId}]. The script duration is ${voiceover.duration}`,
-          },
-          {
-            role: 'system',
-            content: `[The transcript generated: ${JSON.stringify(transcript)}]`,
-          },
-          {
-            role: 'assistant',
-            content:
-              'The voiceover has been generated successfully. You can listen to it now. Would you like to generate visual assets for the project?',
-          },
-        ] as any;
-        await api.conversations.updateAiState.mutate({
-          id: conversationId,
-          aiState: aiStateUpdate,
-        });
-        aiState.done(aiStateUpdate);
-
-        reply.done(
-          <>
-            <AiMessage>Here's your voiceover</AiMessage>
-            <VoiceoverResult url={voiceover?.url} />
-            <AiMessage>
-              <p>The voiceover has been generated and transcribed.</p>
-              <br />
-              <p>
-                We are almost at the last step. Would you like to generate
-                visual assets for the project or simply go to the editing
-                interface?
-              </p>
-            </AiMessage>
-          </>,
-        );
+    await runAsyncFnWithoutBlocking(async () => {
+      const voiceover = await api.voiceovers.create.mutate({
+        id: conversationId,
+        scriptId: conversationId,
+        script: script?.content,
+        voicemodel: 'onyx',
       });
-    },
-  );
+
+      if (!voiceover?.id || !voiceover.url) {
+        reply.update(
+          <AiMessage>
+            <p>
+              Sorry, I couldn't generate the voiceover for you. Would you like
+              me to try again?
+            </p>
+          </AiMessage>,
+        );
+        return;
+      }
+
+      reply.update(
+        <>
+          <AiMessage>Here's your voiceover</AiMessage>
+          <VoiceoverResult url={voiceover?.url} />
+          <AiMessage>
+            <LoadingSpinner /> Transcribing your voiceover...
+          </AiMessage>
+        </>,
+      );
+
+      let aiStateUpdate = [
+        ...aiState.get(),
+        {
+          role: 'system',
+          name: 'generate_voiceover',
+          content: `[Generated voiceover with url ${voiceover?.url} for the user's script and displayed UI]`,
+        },
+      ] as any;
+
+      aiState.update(aiStateUpdate);
+
+      const transcript = await api.voiceovers.transcribe.mutate({
+        id: voiceover?.id,
+        url: voiceover.url,
+      });
+
+      await api.conversations.updateCurrent.mutate({
+        voiceoverId: voiceover?.id,
+      });
+
+      const aiStateNow = aiState.get();
+      aiStateUpdate = [
+        ...aiStateNow,
+        {
+          role: 'function',
+          name: 'generate_voiceover',
+          content: `[Voiceover and transcript fully generated successfully for script with ID: ${conversationId}]. The script duration is ${voiceover.duration}`,
+        },
+        {
+          role: 'system',
+          content: `[The transcript generated: ${JSON.stringify(transcript)}]`,
+        },
+        {
+          role: 'assistant',
+          content:
+            'The voiceover has been generated successfully. You can listen to it now. Would you like to generate visual assets for the project?',
+        },
+      ] as any;
+      await api.conversations.updateAiState.mutate({
+        id: conversationId,
+        aiState: aiStateUpdate,
+      });
+      aiState.done(aiStateUpdate);
+
+      reply.done(
+        <>
+          <AiMessage>Here's your voiceover</AiMessage>
+          <VoiceoverResult url={voiceover?.url} />
+          <AiMessage>
+            <p>The voiceover has been generated and transcribed.</p>
+            <br />
+            <p>
+              We are almost at the last step. Would you like to generate visual
+              assets for the project or simply go to the editing interface?
+            </p>
+          </AiMessage>
+        </>,
+      );
+    });
+  });
 
   completion.onFunctionCall('generate_assets', async ({ assets }) => {
     reply.update(
@@ -674,8 +676,14 @@ Besides that, you can also chat with users and help him develop his ideas if nee
   });
 
   completion.onFunctionCall('generate_video', async () => {
+    const script = await api.scripts.get.query({
+      id: conversationId,
+    });
+    const type = (script?.wordCount || 0) > 180 ? 'long' : 'short';
+
     const { id } = await api.videos.create.mutate({
       id: conversationId,
+      data: { type },
     });
 
     reply.done(<Redirector url={`/videos/${id}`} />);
