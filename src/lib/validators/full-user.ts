@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { ideaSchema } from "./idea";
+import { z } from 'zod';
+import { ideaSchema } from './ideas';
 
 export const fullUserSchema = z.object({
   id: z.string(),
@@ -9,15 +9,15 @@ export const fullUserSchema = z.object({
     .string()
     .optional()
     .refine((val) => !val || val?.length >= 10, {
-      message: "Bio must contain at least 10 characters",
+      message: 'Bio must contain at least 10 characters',
     }),
   x_handle: z
     .string()
     .optional()
     .refine((val) => !val || val?.length >= 3, {
-      message: "X Profile must contain at least 3 characters",
+      message: 'X Profile must contain at least 3 characters',
     }),
-  website: z.union([z.literal(""), z.string().trim().url()]).optional(),
+  website: z.union([z.literal(''), z.string().trim().url()]).optional(),
   ideas: z.array(ideaSchema),
 });
 

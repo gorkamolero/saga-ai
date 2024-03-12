@@ -5,13 +5,14 @@ import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import { ideas } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
+import { Idea } from '@/lib/validators';
 
 export const ideaRouter = createTRPCRouter({
-  getIdeas: privateProcedure.query(async ({ ctx }) => {
+  getAll: privateProcedure.query(async ({ ctx }) => {
     const getideas = await ctx.db.query.ideas.findMany({
       where: eq(ideas.userId, ctx.user.id),
     });
-    return getideas;
+    return getideas as Idea[];
   }),
 
   createIdea: privateProcedure
