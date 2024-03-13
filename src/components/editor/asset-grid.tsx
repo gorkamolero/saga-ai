@@ -60,7 +60,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({ assets, video }) => {
       {hasAssets ? (
         <>
           {assets.map((asset, i) => (
-            <React.Fragment key={asset.id}>
+            <React.Fragment key={asset?.url || asset?.animation || asset?.id}>
               <input
                 type="radio"
                 id={`asset-${asset.id}`}

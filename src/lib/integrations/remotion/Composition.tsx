@@ -29,11 +29,9 @@ export interface CompositionProps {
   voiceover: string | VoiceoverType;
 }
 
-export interface TubesleuthProps
-  extends CompositionProps,
-    Record<string, unknown> {}
+export interface sagaProps extends CompositionProps, Record<string, unknown> {}
 
-export const Tubesleuth: React.FC<TubesleuthProps> = ({
+export const saga: React.FC<sagaProps> = ({
   fps,
   subtitles,
   assets,

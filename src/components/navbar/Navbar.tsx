@@ -24,9 +24,7 @@ const Navbar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="fixed top-0 z-40 flex h-16 w-full items-center justify-between gap-4 bg-background px-6 lg:px-14">
       <div className="mr-auto flex items-center">
         <Link href={'/'} className="shrink-0">
-          <h1 className="text-2xl font-bold text-accent-foreground">
-            Tubesleuth
-          </h1>
+          <h1 className="text-2xl font-bold text-accent-foreground">saga</h1>
         </Link>
         <div className="sparkles relative hidden w-full justify-end gap-1 bg-background px-4 py-2 sm:flex">
           {isLoading ? null : (

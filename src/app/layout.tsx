@@ -1,20 +1,20 @@
-import "@/styles/globals.css";
+import '@/styles/globals.css';
 
-import { Inter } from "next/font/google";
+import { Inter } from 'next/font/google';
 
-import { TRPCReactProvider } from "@/trpc/react";
-import { AI } from "./action";
-import { ThemeProvider } from "@/components/theme-provider";
+import { TRPCReactProvider } from '@/trpc/react';
+import { AI } from './action';
+import { ThemeProvider } from '@/components/theme-provider';
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
+  subsets: ['latin'],
+  variable: '--font-sans',
 });
 
 export const metadata = {
-  title: "Tubesleuth",
-  description: "Your right hand content man",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  title: 'saga',
+  description: 'Your right hand content man',
+  icons: [{ rel: 'icon', url: '/favicon.ico' }],
 };
 
 export default function RootLayout({

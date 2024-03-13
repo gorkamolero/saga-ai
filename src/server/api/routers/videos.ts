@@ -1,12 +1,6 @@
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import {
-  conversations,
-  ideas,
-  scripts,
-  users,
-  videos,
-} from '@/server/db/schema';
+import { conversations, ideas, users, videos } from '@/server/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { createInsertSchema } from 'drizzle-zod';
 

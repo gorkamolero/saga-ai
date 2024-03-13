@@ -1,6 +1,4 @@
 import { z } from 'zod';
-// import { v4 as uuid } from "uuid";
-
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import { ideas } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';

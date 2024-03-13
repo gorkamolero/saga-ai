@@ -20,7 +20,7 @@ import {
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
-export const createTable = pgTableCreator((name) => `tubesleuth-ai_${name}`);
+export const createTable = pgTableCreator((name) => `saga-ai_${name}`);
 
 export const users = createTable('user', {
   id: uuid('id').primaryKey(),
@@ -44,6 +44,7 @@ export const conversations = createTable('conversations', {
   uiState: text('uiState'),
   ideaId: uuid('idea_id').references(() => ideas.id),
   writerId: uuid('writer_id').references(() => writers.id),
+  artistId: uuid('artist_id').references(() => artists.id),
   scriptId: uuid('script_id').references(() => scripts.id),
   voiceoverId: uuid('voiceover_id').references(() => voiceovers.id),
   videoId: uuid('video_id').references(() => videos.id),
@@ -61,6 +62,7 @@ export const conversationRelations = relations(conversations, ({ one }) => ({
   user: one(users),
   idea: one(ideas),
   writer: one(writers),
+  artist: one(artists),
   script: one(scripts),
   voiceover: one(voiceovers),
   video: one(videos),

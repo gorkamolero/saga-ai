@@ -10,6 +10,7 @@ import { Card, CardContent } from '../ui/card';
 import { api } from '@/trpc/react';
 import { LoadingSpinner } from '../ui/spinner';
 import { Textarea } from '../ui/textarea';
+import { useParams } from 'next/navigation';
 
 export const AssetCard = ({
   asset,
@@ -17,6 +18,8 @@ export const AssetCard = ({
   asset: VisualAssetType;
   onSave: (asset: VisualAssetType) => Promise<any>;
 }) => {
+  const videoId = useParams().id;
+  console.log('videoId', videoId);
   const [isEditing, setIsEditing] = React.useState(false);
 
   const { selectedAsset, setSelectedAsset } = useContext(EditorContext);
@@ -26,7 +29,11 @@ export const AssetCard = ({
     api.assets.generateImage.useMutation();
   const handleGenerate = async (e: React.MouseEvent) => {
     if (!asset?.id || !asset.description) return;
-    await generate({ id: asset.id, description: asset.description });
+    await generate({
+      id: asset.id,
+      description: asset.description,
+      videoId: videoId as string,
+    });
   };
 
   const { mutate: animate, isLoading: isLoadingAnimate } =

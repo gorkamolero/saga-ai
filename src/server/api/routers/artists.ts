@@ -1,14 +1,14 @@
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { writers } from '@/server/db/schema';
+import { artists } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 
-export const writerRouter = createTRPCRouter({
+export const artistRouter = createTRPCRouter({
   getAll: privateProcedure.query(async ({ ctx }) => {
-    const getwriters = await ctx.db.query.writers.findMany({
-      where: eq(writers.userId, ctx.user.id),
+    const getartists = await ctx.db.query.artists.findMany({
+      where: eq(artists.userId, ctx.user.id),
     });
-    return getwriters;
+    return getartists;
   }),
 
   get: privateProcedure
@@ -19,10 +19,10 @@ export const writerRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       if (!input?.id) throw new Error('No id provided');
-      const writer = await ctx.db.query.writers.findFirst({
-        where: eq(writers.id, input.id),
+      const artist = await ctx.db.query.artists.findFirst({
+        where: eq(artists.id, input.id),
       });
-      return writer;
+      return artist;
     }),
 
   create: privateProcedure
@@ -34,20 +34,20 @@ export const writerRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       if (!input?.id) throw new Error('No id provided');
-      const createwriter = await ctx.db
-        .insert(writers)
+      const createartist = await ctx.db
+        .insert(artists)
         .values({
           id: input.id,
           userId: ctx.user.id,
           style: input.style,
         })
         .onConflictDoUpdate({
-          target: [writers.id],
+          target: [artists.id],
           set: {
             style: input.style,
           },
         })
         .returning();
-      return createwriter[0];
+      return createartist[0];
     }),
 });

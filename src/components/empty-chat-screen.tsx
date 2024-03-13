@@ -40,6 +40,14 @@ export function EmptyScreen({
     router.push(`/chats/${user?.currentConversationId}`);
   };
 
+  const handleNewUser = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const id = v4();
+    await createConversation({ id: id });
+    router.push(`/chats/${id}`);
+    submitMessage(`I have an idea`);
+  };
+
   const handleStartConversation = async (e: React.MouseEvent) => {
     e.preventDefault();
     const id = v4();
@@ -54,26 +62,21 @@ export function EmptyScreen({
   return (
     <div className="mx-auto max-w-2xl px-4">
       <div className="mb-4 rounded-lg border bg-background p-8">
-        <h1 className="text-lg mb-2 font-semibold">Welcome to Tubesleuth!</h1>
+        <h1 className="text-lg mb-2 font-semibold">Welcome to saga!</h1>
         <p className="mb-2 leading-normal text-muted-foreground">
           Start your content creation journey with us today:
         </p>
         <div className="mb-4 mt-4 flex flex-col items-start space-y-2">
           {!conversationId && !user?.currentConversationId ? (
             <>
-              {exampleMessages.map((message, index) => (
-                <Button
-                  key={index}
-                  variant="link"
-                  className="h-auto p-0 text-base"
-                  onClick={async () => {
-                    submitMessage(message.message);
-                  }}
-                >
-                  <ArrowRight className="mr-2 text-muted-foreground" />
-                  {message.heading}
-                </Button>
-              ))}
+              <Button
+                variant="link"
+                className="h-auto p-0 text-base"
+                onClick={handleNewUser}
+              >
+                <ArrowRight className="mr-2 text-muted-foreground" />I have an
+                idea
+              </Button>
             </>
           ) : (
             <>

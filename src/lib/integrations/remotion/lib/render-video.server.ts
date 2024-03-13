@@ -3,7 +3,7 @@ import { renderMediaOnLambda } from '@remotion/lambda/client';
 
 import { speculateFunctionName } from './get-function-name';
 import type { RenderResponse } from './types';
-import type { TubesleuthProps } from '../Composition';
+import type { sagaProps } from '../Composition';
 
 export const renderVideo = async ({
   serveUrl,
@@ -13,7 +13,7 @@ export const renderVideo = async ({
 }: {
   serveUrl: string;
   composition: string;
-  inputProps: TubesleuthProps;
+  inputProps: sagaProps;
   outName: string;
 }): Promise<RenderResponse> => {
   const region = process.env.REMOTION_AWS_REGION as AwsRegion | undefined;

@@ -7,6 +7,7 @@ import { voiceoverRouter } from './routers/voiceovers';
 import { videoRouter } from './routers/videos';
 import { conversationRouter } from './routers/conversations';
 import { visualAssetRouter } from './routers/assets';
+import { artistRouter } from './routers/artists';
 
 /**
  * This is the primary router for your server.
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   conversations: conversationRouter,
   ideas: ideaRouter,
   writers: writerRouter,
+  artists: artistRouter,
   scripts: scriptRouter,
   voiceovers: voiceoverRouter,
   videos: videoRouter,

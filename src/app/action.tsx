@@ -90,7 +90,7 @@ If the user has an idea, display it back to them with your own title and descrip
 
 If you want to save an idea, call the "save_idea" function to allow the user to save it.
 
-If the user wants to write the script and you haven't been provided a style, you need to define a style for it yourself and propose it and ASK THE USER IF THAT'S OK. Ask them and when you're in agreement, call the "define_style" function to allow them to save it.
+If the user wants to write the script and you haven't been provided a style, you need to define a style for it yourself and propose it and ASK THE USER IF THAT'S OK. Ask them and when you're in agreement, call the "define_writer_style" function to allow them to save it.
 
 The next step is to define a duration for the video. Sometimes the user will want a YouTube short and sometimes he won't care.
 
@@ -100,7 +100,7 @@ It can also happen that the user brings a script with them. In this case, go dir
 
 The next step is to generate a voiceover. You can call the "generate_voiceover" function to allow this. You will receive a transcript and you have to look into it in the next step.
 
-When the transcript is done, ask the user if they want to generate visual assets for the project. If they want you to propose them, YOU ENTER INTO ARCHITECT MODE ${modernArchitect}
+When the transcript is done, ask the user if they want to generate visual assets for the project. You need to define a style for the assets. Ask them, and when you're in agreement, call the "define_visual_style" function to allow them to save it If they want you to propose them, YOU ENTER INTO ARCHITECT MODE ${modernArchitect}
 
 When you're done, call the "save_assets" function to save for the user, with the exact timings you agreed upon for each visual asset.
 
@@ -138,10 +138,17 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         }),
       },
       {
-        name: 'define_style',
+        name: 'define_writer_style',
         description: 'Define the writing style of the script',
         parameters: z.object({
           style: z.string().describe('The style of the script'),
+        }),
+      },
+      {
+        name: 'define_visual_style',
+        description: 'Define the artistic style of the visual assets',
+        parameters: z.object({
+          style: z.string().describe('The style of the visual assets'),
         }),
       },
       {
@@ -326,9 +333,13 @@ Besides that, you can also chat with users and help him develop his ideas if nee
 
   completion.onFunctionCall('save_idea', async ({ title, description }) => {
     reply.update(
-      <AiMessage>
-        <LoadingSpinner />
-      </AiMessage>,
+      <>
+        <Redirector url={`/chats/${conversationId}`} />
+        <AiMessage>
+          <LoadingSpinner />
+        </AiMessage>
+        ,
+      </>,
     );
 
     try {
@@ -336,6 +347,10 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         id: conversationId,
         title,
         description,
+      });
+
+      await api.conversations.create.mutate({
+        id: conversationId,
       });
 
       const aiStateNow = aiState.get();
@@ -382,7 +397,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
     }
   });
 
-  completion.onFunctionCall('define_style', async ({ style }) => {
+  completion.onFunctionCall('define_writer_style', async ({ style }) => {
     const createWriter = await api.writers.create.mutate({
       id: conversationId,
       style,
@@ -423,7 +438,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
       ...aiStateNow,
       {
         role: 'function',
-        name: 'define_style',
+        name: 'define_writer_style',
         content: `[UI to define the style "${style}" for the script we will generate]`,
       },
       {
@@ -628,6 +643,64 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         </div>,
       );
     });
+  });
+
+  completion.onFunctionCall('define_visual_style', async ({ style }) => {
+    const createArtist = await api.artists.create.mutate({
+      id: conversationId,
+      style,
+    });
+
+    if (!createArtist || !('id' in createArtist)) {
+      reply.done(
+        <AiMessage>
+          <p>
+            Sorry, I couldn't create a visual style style {style}. Would you
+            like to try again?
+          </p>
+        </AiMessage>,
+      );
+      return;
+    }
+
+    await api.conversations.updateCurrent.mutate({
+      artistId: createArtist.id,
+    });
+
+    const { id } = createArtist;
+
+    const aiStateNow = aiState.get();
+    const aiStateUpdate = [
+      ...aiStateNow,
+      {
+        role: 'function',
+        name: 'define_writer_style',
+        content: `[UI to define the style "${style}" for the visual assets assets we will generate]`,
+      },
+      {
+        role: 'system',
+        content: `[The user has chosen the following style ${style} for the visual assets of the script]`,
+      },
+      {
+        role: 'assistant',
+        content: `Nice. We created an "artist" with the style "${style}". Would you like to continue?`,
+      },
+    ] as any;
+    await api.conversations.updateAiState.mutate({
+      id: conversationId,
+      aiState: aiStateUpdate,
+    });
+    aiState.done(aiStateUpdate);
+    await api.conversations.updateCurrent.mutate({
+      artistId: id,
+    });
+
+    reply.done(
+      <AiMessage>
+        <p>{style}</p>
+        <p>Great. Would you like to generate the assets now?</p>
+      </AiMessage>,
+    );
   });
 
   completion.onFunctionCall('save_assets', async ({ assets }) => {

@@ -11,6 +11,7 @@ import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { generateImageWithLemonfox } from '@/lib/ai/genLemonFox';
 import { animateImage } from '@/lib/ai/animateImage';
+import { api } from '@/trpc/server';
 
 export const visualAssetSchema = createInsertSchema(visualAssets).partial();
 export type VisualAssetType = z.infer<typeof visualAssetSchema>;
@@ -192,19 +193,34 @@ export const visualAssetRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         description: z.string(),
+        videoId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.user.id;
       const id = input.id;
       const description = input.description;
+      const videoId = input.videoId;
 
       if (!id || !description) {
         throw new Error('No image found or no description');
       }
 
+      const video = await ctx.db.query.videos.findFirst({
+        where: eq(videos.id, videoId),
+      });
+
+      if (!video || !video.artistId) {
+        throw new Error('No artist found');
+      }
+
+      const artist = await api.artists.get.query({ id: video.artistId });
+      const style = artist?.style;
+
+      const prompt = `${description} in the style of ${style}`;
+
       const remoteUrl = await generateImageWithLemonfox({
-        description,
+        description: prompt,
       });
 
       const imageLocalRequest = await fetch(remoteUrl);

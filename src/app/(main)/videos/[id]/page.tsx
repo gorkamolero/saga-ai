@@ -12,6 +12,10 @@ const VideoPage = () => {
     id: id as string,
   });
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Suspense fallback="Loading...">
       <Editor video={video as FullVideoType} />

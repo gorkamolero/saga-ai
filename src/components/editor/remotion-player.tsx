@@ -1,9 +1,6 @@
 import { type FullVideoType } from '@/lib/validators/videos';
 import { FPS } from '@/lib/constants';
-import {
-  Tubesleuth,
-  type TubesleuthProps,
-} from '@/lib/integrations/remotion/Composition';
+import { saga, type sagaProps } from '@/lib/integrations/remotion/Composition';
 import { convertSecondsToFrames } from '@/lib/utils/animations';
 import { type TranscriptType } from '@/lib/validators/transcript';
 import { type VisualAssetType } from '@/lib/validators/visual-assets';
@@ -33,7 +30,7 @@ export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
     }),
   );
 
-  const inputProps: TubesleuthProps = {
+  const inputProps: sagaProps = {
     videoId: video.id,
     fps: ourFPS,
     script: video.script,
@@ -55,7 +52,7 @@ export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
       >
         <Player
           clickToPlay={false}
-          component={Tubesleuth}
+          component={saga}
           inputProps={inputProps}
           durationInFrames={durationInFrames}
           compositionWidth={1080}

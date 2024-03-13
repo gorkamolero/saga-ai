@@ -1,15 +1,13 @@
 import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
-import { videos, voiceovers } from '@/server/db/schema';
+import { voiceovers } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { v4 } from 'uuid';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { generateVoiceover } from '@/lib/ai/generateVoiceover';
 import generateTranscript from '@/lib/ai/generateTranscript';
 import { remapTranscript } from '@/lib/utils';
 import { type VOICEMODELS } from '@/lib/validators/voicemodel';
-import { type Transcript } from 'assemblyai';
 import { createInsertSchema } from 'drizzle-zod';
 
 export const voiceoverSchema = createInsertSchema(voiceovers).partial();
