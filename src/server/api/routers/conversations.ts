@@ -88,6 +88,7 @@ export const conversationRouter = createTRPCRouter({
           userId: ctx.user.id,
           id: input.id,
         })
+        .onConflictDoNothing()
         .returning();
       await ctx.db
         .update(users)

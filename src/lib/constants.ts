@@ -6,6 +6,9 @@ export const FPS = 30;
 export const width = 1080;
 export const height = 1920;
 
+export const storyboardWidth = 512;
+export const storyboardHeight = 512;
+
 export const voicemodelAudios = Object.values(VOICEMODELS).map(
   (model: VOICEMODELS) => ({
     name: model,

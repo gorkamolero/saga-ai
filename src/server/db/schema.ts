@@ -117,6 +117,9 @@ export const scripts = createTable('scripts', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   writerId: uuid('writer_id').references(() => writers.id),
   videoId: uuid('video_id'),
+  voicemodel: varchar('voicemodel', {
+    length: 16,
+  }),
 });
 
 export const scriptsRelations = relations(scripts, ({ one, many }) => ({

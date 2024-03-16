@@ -23,7 +23,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className="fixed top-0 overflow-y-hidden"
+    >
       <body className={`font-sans ${inter.variable}`}>
         <AI>
           <TRPCReactProvider>

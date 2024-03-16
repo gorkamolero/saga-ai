@@ -17,7 +17,6 @@ import { scriptwriter } from '@/lib/prompts/scriptwriter';
 import { VoiceoverResult } from '@/components/llm/voiceover-result';
 import { v4 } from 'uuid';
 import { modernArchitect } from '@/lib/prompts/modern-architect';
-import { Card } from '@/components/ui/card';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { Redirector } from '@/components/llm/redirector';
@@ -26,6 +25,8 @@ import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
 import { HeaderSkeleton } from '@/components/ui/header-skeleton';
 import { ContentCard } from '@/components/content-card';
 import { ScriptForm } from '@/components/script-form';
+import { VoiceModelSelector } from '@/components/llm/voicemodel-selector';
+import { voicemodel } from '@/lib/validators';
 
 // const isBravura = false;
 
@@ -98,7 +99,7 @@ The next step is to write a script, with the following instructions: ${scriptwri
 
 It can also happen that the user brings a script with them. In this case, go directly to the "save_user_script" function to save it.
 
-The next step is to generate a voiceover. You can call the "generate_voiceover" function to allow this. You will receive a transcript and you have to look into it in the next step.
+The next step is to generate a voiceover. The user needs to choose a model for the voiceover so call the "choose_voiceover_model" function FIRST. Then when you know the model, you can go ahead and call the "generate_voiceover" function. You will receive a transcript and you have to look into it in the next step.
 
 When the transcript is done, ask the user if they want to generate visual assets for the project. You need to define a style for the assets. Ask them, and when you're in agreement, call the "define_visual_style" function to allow them to save it If they want you to propose them, YOU ENTER INTO ARCHITECT MODE ${modernArchitect}
 
@@ -164,9 +165,16 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         parameters: z.object({}),
       },
       {
+        name: 'choose_voiceover_model',
+        description: 'Choose the voiceover model for the voiceover',
+        parameters: z.object({}),
+      },
+      {
         name: 'generate_voiceover',
         description: 'Generate a voiceover for the user',
-        parameters: z.object({}),
+        parameters: z.object({
+          voicemodel: voicemodel.describe('The user chosen voiceover model'),
+        }),
       },
       {
         name: 'save_assets',
@@ -349,7 +357,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         description,
       });
 
-      await api.conversations.create.mutate({
+      await api.conversations.createAndSetInUser.mutate({
         id: conversationId,
       });
 
@@ -449,6 +457,10 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         role: 'assistant',
         content: `Nice. We created a writer with the style "${style}". Would you like to continue?`,
       },
+      {
+        role: 'user',
+        content: 'Yes please, write the script',
+      },
     ] as any;
     await api.conversations.updateAiState.mutate({
       id: conversationId,
@@ -523,7 +535,25 @@ Besides that, you can also chat with users and help him develop his ideas if nee
     ]);
   });
 
-  completion.onFunctionCall('generate_voiceover', async () => {
+  completion.onFunctionCall('choose_voiceover_model', async () => {
+    aiState.done([
+      ...aiState.get(),
+      {
+        role: 'system',
+        content: `[The user's script is ready for voiceover generation. VoiceModel selector shown to the user]`,
+      },
+    ]);
+
+    reply.done(
+      <AiMessage>
+        <div className="flex gap-2">
+          <VoiceModelSelector scriptId={conversationId} />
+        </div>
+      </AiMessage>,
+    );
+  });
+
+  completion.onFunctionCall('generate_voiceover', async ({ voicemodel }) => {
     const script = await api.scripts.get.query({
       id: conversationId,
     });
@@ -553,7 +583,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         id: conversationId,
         scriptId: conversationId,
         script: script?.content,
-        voicemodel: 'onyx',
+        voicemodel: voicemodel ?? 'onyx',
       });
 
       if (!voiceover?.id || !voiceover.url) {
@@ -569,7 +599,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
       }
 
       reply.update(
-        <div className="grid gap-2">
+        <div className="grid items-start gap-2">
           <AiMessage>Here's your voiceover</AiMessage>
           <VoiceoverResult url={voiceover?.url} />
           <AiMessage>
@@ -698,7 +728,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
     reply.done(
       <AiMessage>
         <p>{style}</p>
-        <p>Great. Would you like to generate the assets now?</p>
+        <p>Great. Would you like to generate visual the assets now?</p>
       </AiMessage>,
     );
   });
