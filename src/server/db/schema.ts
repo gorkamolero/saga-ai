@@ -48,6 +48,7 @@ export const conversations = createTable('conversations', {
   scriptId: uuid('script_id').references(() => scripts.id),
   voiceoverId: uuid('voiceover_id').references(() => voiceovers.id),
   videoId: uuid('video_id').references(() => videos.id),
+  channelId: uuid('channel_id').references(() => channels.id),
 });
 
 export const userRelations = relations(users, ({ one, many }) => ({
@@ -66,6 +67,7 @@ export const conversationRelations = relations(conversations, ({ one }) => ({
   script: one(scripts),
   voiceover: one(voiceovers),
   video: one(videos),
+  channel: one(channels),
 }));
 
 export const ideas = createTable('ideas', {
@@ -197,6 +199,7 @@ export const videos = createTable('videos', {
   type: varchar('type', {
     length: 10,
   }),
+  channelId: uuid('channel_id').references(() => channels.id),
 });
 
 export const videoRelations = relations(videos, ({ one, many }) => ({
@@ -223,4 +226,32 @@ export const visualAssetRelations = relations(visualAssets, ({ one }) => ({
     fields: [visualAssets.videoId],
     references: [videos.id],
   }),
+}));
+
+export const channels = createTable('channel', {
+  id: uuid('id').primaryKey(),
+  name: varchar('name', {
+    length: 120,
+  }).unique(),
+  description: varchar('description', {
+    length: 480,
+  }),
+  conversationId: uuid('conversation_id'),
+  userId: uuid('user_id').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  writerId: uuid('writer_id').references(() => writers.id),
+  artistId: uuid('artist_id').references(() => artists.id),
+  voicemodel: varchar('voicemodel', {
+    length: 16,
+  }),
+});
+
+export const channelsRelations = relations(channels, ({ one, many }) => ({
+  user: one(users),
+  writer: one(writers),
+  artist: one(artists),
+  videos: many(videos),
+  ideas: many(ideas),
+  scripts: many(scripts),
 }));

@@ -8,6 +8,7 @@ import { videoRouter } from './routers/videos';
 import { conversationRouter } from './routers/conversations';
 import { visualAssetRouter } from './routers/assets';
 import { artistRouter } from './routers/artists';
+import { channelRouter } from './routers/channels';
 
 /**
  * This is the primary router for your server.
@@ -24,6 +25,7 @@ export const appRouter = createTRPCRouter({
   voiceovers: voiceoverRouter,
   videos: videoRouter,
   assets: visualAssetRouter,
+  channels: channelRouter,
 });
 
 // export type definition of API

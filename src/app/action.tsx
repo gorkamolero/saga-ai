@@ -4,6 +4,8 @@ import { OpenAI } from 'openai';
 import { createAI, getMutableAIState, createStreamableUI } from 'ai/rsc';
 import { z } from 'zod';
 import { api } from '@/trpc/server';
+import Bottleneck from 'bottleneck';
+import logger from 'pino';
 import { LoadingSpinner } from '@/components/ui/spinner';
 import { AiMessage } from '@/components/ui/ai-message';
 import {
@@ -27,6 +29,11 @@ import { ContentCard } from '@/components/content-card';
 import { ScriptForm } from '@/components/script-form';
 import { VoiceModelSelector } from '@/components/llm/voicemodel-selector';
 import { voicemodel } from '@/lib/validators';
+import {
+  aspectRatioByDuration,
+  shortVideoDuration,
+  videoSizeByDuration,
+} from '@/lib/constants';
 
 // const isBravura = false;
 
@@ -49,12 +56,14 @@ export const lemonfox = new OpenAI({
 
 async function submitUserMessage({
   message,
-  conversationId = v4(),
+  conversationId: initialConversationId = v4(),
 }: {
   message: string;
   conversationId?: string;
 }) {
   'use server';
+
+  let conversationId = initialConversationId;
 
   const aiState = getMutableAIState<typeof AI>();
   const stateNow = aiState.get();
@@ -93,7 +102,7 @@ If you want to save an idea, call the "save_idea" function to allow the user to 
 
 If the user wants to write the script and you haven't been provided a style, you need to define a style for it yourself and propose it and ASK THE USER IF THAT'S OK. Ask them and when you're in agreement, call the "define_writer_style" function to allow them to save it.
 
-The next step is to define a duration for the video. Sometimes the user will want a YouTube short and sometimes he won't care.
+The next step is to define a duration for the video. Sometimes the user will want a YouTube short and sometimes he won't care. This is very important to determine the format.
 
 The next step is to write a script, with the following instructions: ${scriptwriter} and display it to them and ASK IF THEY LIKE IT. When the user likes it and you are done modifying it, call the "save_generated_script" function to allow the user to save it.
 
@@ -103,7 +112,11 @@ The next step is to generate a voiceover. The user needs to choose a model for t
 
 When the transcript is done, ask the user if they want to generate visual assets for the project. You need to define a style for the assets. Ask them, and when you're in agreement, call the "define_visual_style" function to allow them to save it If they want you to propose them, YOU ENTER INTO ARCHITECT MODE ${modernArchitect}
 
-When you're done, call the "save_assets" function to save for the user, with the exact timings you agreed upon for each visual asset.
+When you're done, call the "generate_assets" function to save for the user, with the exact timings you agreed upon for each visual asset.
+
+After that, prompt the user to save their work as a channel for later use, and call the "save_as_channel" function to allow them to save it. Maybe they won't want to do this
+
+When you're done, call the "generate_video" function to save the project and take the user to the editing interface.
 
 Besides that, you can also chat with users and help him develop his ideas if needed.
 `,
@@ -142,7 +155,9 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         name: 'define_writer_style',
         description: 'Define the writing style of the script',
         parameters: z.object({
-          style: z.string().describe('The style of the script'),
+          verboseStyle: z
+            .string()
+            .describe('A verbose description of the style'),
         }),
       },
       {
@@ -177,7 +192,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         }),
       },
       {
-        name: 'save_assets',
+        name: 'generate_assets',
         description: 'Generate assets for the user',
         parameters: z.object({
           assets: z.array(
@@ -185,7 +200,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
               description: z
                 .string()
                 .describe(
-                  'The detailed description of the visual asset, in a very specific format to be fed as a prompt to an AI visual generation tool like DALL-E',
+                  'The detailed description of the visual asset, in a very specific format to be fed as a prompt to an AI visual generation tool like DALL-E. No need to explain meaning here, straight up visual description.',
                 ),
               start: z
                 .number()
@@ -209,6 +224,8 @@ Besides that, you can also chat with users and help him develop his ideas if nee
                 ),
             }),
           ),
+          duration: z.number().describe('The duration of the video in seconds'),
+          style: z.string().describe('The chosen style for the visual assets'),
         }),
       },
       {
@@ -221,6 +238,14 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         name: 'recall_project',
         description: 'Recall the project for the user',
         parameters: z.object({}),
+      },
+      {
+        name: 'save_as_channel',
+        description: 'Save a new channel for the user',
+        parameters: z.object({
+          name: z.string().describe('The name of the channel'),
+          description: z.string().describe('The description of the channel'),
+        }),
       },
     ],
     temperature: 0,
@@ -236,6 +261,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
   });
 
   completion.onFunctionCall('fetch_user_content', async ({ contentType }) => {
+    logger().info('Fetching user content');
     reply.update(
       <AiMessage>
         <LoadingSpinner />
@@ -340,25 +366,37 @@ Besides that, you can also chat with users and help him develop his ideas if nee
   });
 
   completion.onFunctionCall('save_idea', async ({ title, description }) => {
+    logger().info('Saving idea');
     reply.update(
       <>
         <Redirector url={`/chats/${conversationId}`} />
         <AiMessage>
           <LoadingSpinner />
         </AiMessage>
-        ,
       </>,
     );
 
     try {
+      const conversation = await api.conversations.get.query({
+        id: conversationId,
+      });
+      if (!conversation) {
+        throw new Error('Conversation not found');
+      }
+      if (conversation.ideaId) {
+        conversationId = v4();
+        await api.conversations.createAndSetInUser.mutate({
+          id: conversationId,
+        });
+        reply.update(<Redirector url={`/chats/${conversationId}`} />);
+      }
       await api.ideas.createIdea.mutate({
         id: conversationId,
         title,
         description,
       });
-
-      await api.conversations.createAndSetInUser.mutate({
-        id: conversationId,
+      await api.conversations.updateCurrent.mutate({
+        ideaId: conversationId,
       });
 
       const aiStateNow = aiState.get();
@@ -390,9 +428,6 @@ Besides that, you can also chat with users and help him develop his ideas if nee
           <p>Would you like to go on and write the script?</p>
         </AiMessage>,
       );
-      await api.conversations.updateCurrent.mutate({
-        ideaId: conversationId,
-      });
     } catch (error) {
       reply.done(
         <AiMessage>
@@ -405,7 +440,9 @@ Besides that, you can also chat with users and help him develop his ideas if nee
     }
   });
 
-  completion.onFunctionCall('define_writer_style', async ({ style }) => {
+  completion.onFunctionCall('define_writer_style', async ({ verboseStyle }) => {
+    const style = verboseStyle;
+    logger().info('Defining writer style');
     const createWriter = await api.writers.create.mutate({
       id: conversationId,
       style,
@@ -480,6 +517,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
   });
 
   completion.onFunctionCall('save_generated_script', async ({ script }) => {
+    logger().info('Saving generated script');
     await api.scripts.createOrUpdate.mutate({
       id: conversationId,
       script,
@@ -514,6 +552,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
   });
 
   completion.onFunctionCall('save_user_script', async () => {
+    logger().info('Saving user script');
     reply.done(
       <div className="grid gap-2">
         <ContentCard
@@ -536,6 +575,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
   });
 
   completion.onFunctionCall('choose_voiceover_model', async () => {
+    logger().info('Choosing voiceover model');
     aiState.done([
       ...aiState.get(),
       {
@@ -554,6 +594,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
   });
 
   completion.onFunctionCall('generate_voiceover', async ({ voicemodel }) => {
+    logger().info('Generating voiceover');
     const script = await api.scripts.get.query({
       id: conversationId,
     });
@@ -600,7 +641,6 @@ Besides that, you can also chat with users and help him develop his ideas if nee
 
       reply.update(
         <div className="grid items-start gap-2">
-          <AiMessage>Here's your voiceover</AiMessage>
           <VoiceoverResult url={voiceover?.url} />
           <AiMessage>
             <div className="flex gap-2">
@@ -676,6 +716,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
   });
 
   completion.onFunctionCall('define_visual_style', async ({ style }) => {
+    logger().info('Defining visual style');
     const createArtist = await api.artists.create.mutate({
       id: conversationId,
       style,
@@ -733,66 +774,145 @@ Besides that, you can also chat with users and help him develop his ideas if nee
     );
   });
 
-  completion.onFunctionCall('save_assets', async ({ assets }) => {
-    reply.update(
-      <AiMessage>
-        <LoadingSpinner /> Generating visual assets
-      </AiMessage>,
-    );
+  completion.onFunctionCall(
+    'generate_assets',
+    async ({ assets, duration, style }) => {
+      logger().info('Generating assets');
+      const limiter = new Bottleneck({
+        maxConcurrent: 3,
+        minTime: 333,
+      });
 
-    await api.videos.create.mutate({
-      id: conversationId,
-    });
-
-    const mappedAssets = await api.assets.saveMultiple.mutate({
-      conversationId,
-      assets,
-    });
-
-    if (!mappedAssets) {
-      reply.done(
+      reply.update(
         <AiMessage>
-          <p>
-            Sorry, I couldn't generate the visual assets for you. Would you like
-            me to try again?
-          </p>
+          <div className="flex gap-2">
+            <LoadingSpinner /> Generating visual assets
+          </div>
         </AiMessage>,
       );
-      return;
-    }
 
-    const aiStateNow = aiState.get();
-    const aiStateUpdate = [
-      ...aiStateNow,
-      {
-        role: 'function',
-        name: 'save_assets',
-        content: `[Saved visual assets for user's video and displayed UI]`,
-      },
-      {
-        role: 'assistant',
-        content: `Your visual asset map have been saved. Would you like to generate the video?`,
-      },
-    ] as any;
-    await api.conversations.updateAiState.mutate({
-      id: conversationId,
-      aiState: aiStateUpdate,
-    });
-    aiState.done(aiStateUpdate);
+      await api.videos.create.mutate({
+        id: conversationId,
+        data: {
+          type: duration > shortVideoDuration ? 'long' : 'short',
+        },
+      });
 
-    reply.done(
-      <>
-        <AiMessage>
-          <p>
-            The visual assets have been generated successfully. You can view
-            them now. Would you like to generate the video?
-          </p>
-        </AiMessage>
-      </>,
-    );
-  });
+      const size = videoSizeByDuration(duration);
+
+      const assetPromises = assets.map((asset) =>
+        limiter.schedule(() =>
+          api.assets.generateLight.mutate({
+            description: asset.description,
+            size,
+            style,
+            start: asset.start,
+          }),
+        ),
+      );
+
+      try {
+        const assetResults = await Promise.all(assetPromises);
+        const updatedAssets = assets.map((asset) => {
+          const correspondingResult = assetResults.find(
+            (result) => result.start === asset.start,
+          );
+          if (!correspondingResult) {
+            return asset;
+          }
+          return {
+            ...asset,
+            url: correspondingResult.url,
+          };
+        });
+
+        const uploadedAssets = await api.assets.saveMultiple.mutate({
+          conversationId,
+          assets: updatedAssets,
+        });
+
+        if (!uploadedAssets) {
+          reply.done(
+            <AiMessage>
+              <p>
+                Sorry, I couldn't generate the visual assets for you. Would you
+                like me to try again?
+              </p>
+            </AiMessage>,
+          );
+          return;
+        }
+
+        const aiStateNow = aiState.get();
+        const aiStateUpdate = [
+          ...aiStateNow,
+          {
+            role: 'function',
+            name: 'generate_assets',
+            content: `[Saved visual assets for user's video and displayed UI]`,
+          },
+          {
+            role: 'assistant',
+            content: `Your visual asset map have been saved. Would you like to generate the video?`,
+          },
+        ] as any;
+        await api.conversations.updateAiState.mutate({
+          id: conversationId,
+          aiState: aiStateUpdate,
+        });
+        aiState.done(aiStateUpdate);
+
+        reply.done(
+          <>
+            <div className="mb-8 flex w-screen flex-col gap-2 overflow-hidden px-8">
+              <div className="md:auto-rows grid grid-cols-1 gap-2 md:grid-cols-3">
+                {uploadedAssets.map((asset, i) => {
+                  const url = asset.url!;
+                  const id = asset.id;
+                  const description = asset.description!;
+                  return (
+                    <ContentCard
+                      key={i}
+                      className="max-w-128 w-full"
+                      description={asset.description}
+                      hoverFx={false}
+                      data-id={id}
+                      xtra={
+                        <div
+                          style={{
+                            aspectRatio: aspectRatioByDuration(duration),
+                          }}
+                        >
+                          {url ? <img src={url} alt={description} /> : <div />}
+                        </div>
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </div>
+
+            <AiMarkdownMessage>
+              Your visual asset map have been saved. Would you like to generate
+              the video?
+            </AiMarkdownMessage>
+          </>,
+        );
+      } catch (error) {
+        reply.done(
+          <AiMessage>
+            <p>
+              Sorry, I couldn't generate the visual assets for you. Would you
+              like me to try again?
+            </p>
+          </AiMessage>,
+        );
+      }
+    },
+  );
 
   completion.onFunctionCall('generate_video', async () => {
+    logger().info('Generating video');
     const script = await api.scripts.get.query({
       id: conversationId,
     });
@@ -827,6 +947,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
   });
 
   completion.onFunctionCall('recall_project', async () => {
+    logger().info('Recalling project');
     const convo = await api.conversations.get.query({
       id: conversationId,
     });
@@ -895,6 +1016,60 @@ Besides that, you can also chat with users and help him develop his ideas if nee
       </AiMessage>,
     );
   });
+
+  completion.onFunctionCall(
+    'save_as_channel',
+    async ({ name, description }) => {
+      logger().info('Saving as channel');
+      const channel = await api.channels.create.mutate({
+        conversationId,
+        name,
+        description,
+      });
+
+      if (!channel || !channel.id) {
+        reply.done(
+          <AiMessage>
+            <p>
+              Sorry, I couldn't save the channel with the name {name}. Would you
+              like to try again?
+            </p>
+          </AiMessage>,
+        );
+        return;
+      }
+
+      await api.conversations.updateCurrent.mutate({
+        channelId: channel.id,
+      });
+
+      const aiStateNow = aiState.get();
+      const aiStateUpdate = [
+        ...aiStateNow,
+        {
+          role: 'function',
+          name: 'save_as_channel',
+          content: `[Saved the channel with the name ${name}]`,
+        },
+        {
+          role: 'assistant',
+          content: `The channel has been saved successfully. You can view it now.`,
+        },
+      ] as any;
+
+      await api.conversations.updateAiState.mutate({
+        id: conversationId,
+        aiState: aiStateUpdate,
+      });
+      aiState.done(aiStateUpdate);
+
+      reply.done(
+        <AiMessage>
+          <p>The channel has been saved successfully. You can view it now.</p>
+        </AiMessage>,
+      );
+    },
+  );
 
   return {
     id: Date.now(),

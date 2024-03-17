@@ -3,7 +3,7 @@ import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import { ideas } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { v4 } from 'uuid';
-import { Idea } from '@/lib/validators';
+import { type Idea } from '@/lib/validators';
 
 export const ideaRouter = createTRPCRouter({
   getAll: privateProcedure.query(async ({ ctx }) => {

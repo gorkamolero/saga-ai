@@ -112,8 +112,7 @@ export const videoRouter = createTRPCRouter({
           duration: duration || 0,
           ...otherData,
         })
-        .onConflictDoNothing()
-        .returning();
+        .onConflictDoNothing();
 
       await ctx.db
         .update(conversations)

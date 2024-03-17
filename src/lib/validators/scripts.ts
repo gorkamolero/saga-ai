@@ -1,6 +1,6 @@
 import { scripts } from '@/server/db/schema';
 import { createInsertSchema } from 'drizzle-zod';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 export const scriptSchema = createInsertSchema(scripts).partial();
 

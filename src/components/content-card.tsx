@@ -9,6 +9,7 @@ export function ContentCard({
   xtra,
   className,
   hoverFx = true,
+  ...props
 }: {
   title?: string | React.ReactNode;
   description?: string | React.ReactNode;
@@ -22,6 +23,7 @@ export function ContentCard({
         `group/cards aspect-square max-w-64 rounded-lg border border-primary bg-white p-8 text-primary shadow ring-offset-background  focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`,
         className,
       )}
+      {...props}
     >
       {title && (
         <CardTitle className="text-2xl mb-4 whitespace-pre-line font-bold transition duration-200 ">

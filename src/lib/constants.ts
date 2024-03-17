@@ -5,6 +5,7 @@ export const MAX_IMAGE_GENERATIONS = 3;
 export const FPS = 30;
 export const width = 1080;
 export const height = 1920;
+export const shortVideoDuration = 80;
 
 export const storyboardWidth = 512;
 export const storyboardHeight = 512;
@@ -61,3 +62,31 @@ export const musicAudios = [
       'https://ezamdwrrzqrnyewhqdup.supabase.co/storage/v1/object/public/assets/sentimental.mp3?t=2024-03-04T12%3A56%3A06.111Z',
   },
 ];
+
+export const videoSizeByType = {
+  vertical: {
+    width: 576,
+    height: 1024,
+  },
+  horizontal: {
+    width: 1024,
+    height: 576,
+  },
+};
+
+export const aspectRatioByType = {
+  vertical: '9/16',
+  horizontal: '16/9',
+};
+
+export const videoSizeByDuration = (duration: number) => {
+  return duration < shortVideoDuration
+    ? videoSizeByType.vertical
+    : videoSizeByType.horizontal;
+};
+
+export const aspectRatioByDuration = (duration: number) => {
+  return duration < shortVideoDuration
+    ? aspectRatioByType.vertical
+    : aspectRatioByType.horizontal;
+};

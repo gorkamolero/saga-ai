@@ -3,7 +3,7 @@ import { EditorContext } from './editor-context';
 import { type WordType } from '@/lib/validators/words';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { PanInfo, animate, motion } from 'framer-motion';
+import { type PanInfo, animate, motion } from 'framer-motion';
 
 interface Props {
   words: WordType[];
@@ -86,7 +86,7 @@ export const TranscriptDisplay: React.FC<Props> = ({ words }) => {
 
     const isWord = validEls?.classList.contains('word');
     if (isWord) {
-      wordEl = validEls as Element;
+      wordEl = validEls!;
     }
 
     const isChooseNext = validEls?.classList.contains('choose-next');

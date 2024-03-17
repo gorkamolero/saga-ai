@@ -15,6 +15,7 @@ export const mapNewAssets = ({
   endWordIndex,
   userId,
   videoId,
+  url,
 }: {
   description: string;
   start: number;
@@ -24,6 +25,7 @@ export const mapNewAssets = ({
   endWordIndex: number;
   userId: string;
   videoId: string;
+  url?: string | null | undefined;
 }): VisualAssetType =>
   visualAssetSchema.parse({
     description,
@@ -36,6 +38,7 @@ export const mapNewAssets = ({
     index,
     startWordIndex,
     endWordIndex,
+    ...(url && { url }),
   });
 
 const instructions =

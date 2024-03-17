@@ -31,7 +31,7 @@ export interface CompositionProps {
 
 export interface sagaProps extends CompositionProps, Record<string, unknown> {}
 
-export const saga: React.FC<sagaProps> = ({
+export const Saga: React.FC<sagaProps> = ({
   fps,
   subtitles,
   assets,

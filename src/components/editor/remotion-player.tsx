@@ -1,6 +1,6 @@
 import { type FullVideoType } from '@/lib/validators/videos';
 import { FPS } from '@/lib/constants';
-import { saga, type sagaProps } from '@/lib/integrations/remotion/Composition';
+import { Saga, type sagaProps } from '@/lib/integrations/remotion/Composition';
 import { convertSecondsToFrames } from '@/lib/utils/animations';
 import { type TranscriptType } from '@/lib/validators/transcript';
 import { type VisualAssetType } from '@/lib/validators/visual-assets';
@@ -52,7 +52,7 @@ export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
       >
         <Player
           clickToPlay={false}
-          component={saga}
+          component={Saga}
           inputProps={inputProps}
           durationInFrames={durationInFrames}
           compositionWidth={1080}

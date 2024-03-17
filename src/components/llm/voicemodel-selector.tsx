@@ -1,11 +1,11 @@
 'use client';
 
-import { AI } from '@/app/action';
+import { type AI } from '@/app/action';
 import { useAIState, useActions, useUIState } from 'ai/rsc';
 import { AudioSelector } from '@/components/audio-selector';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-import { VOICEMODELS } from '@/lib/validators';
+import { type VOICEMODELS } from '@/lib/validators';
 
 export const VoiceModelSelector = ({ scriptId }: { scriptId: string }) => {
   const [loading, setLoading] = useState(false);
@@ -38,7 +38,7 @@ export const VoiceModelSelector = ({ scriptId }: { scriptId: string }) => {
 
     const responseMessage = await submitUserMessage({
       message: `I choose "${selectedVoiceModel}" voice model.`,
-      conversationId: scriptId as string,
+      conversationId: scriptId,
     });
 
     setMessages([...messages, responseMessage]);

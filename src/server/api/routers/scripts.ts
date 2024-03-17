@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '@/server/api/trpc';
 import { conversations, scripts, users } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
-import { Script } from '@/lib/validators/scripts';
-import { Idea } from '@/lib/validators';
+import { type Script } from '@/lib/validators/scripts';
+import { type Idea } from '@/lib/validators';
 
 const updateScriptSchema = z.object({
   id: z.string(),

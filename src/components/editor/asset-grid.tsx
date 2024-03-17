@@ -4,7 +4,7 @@ import { EditorContext } from '@/components/editor/editor-context';
 import { type VisualAssetType } from '@/server/api/routers/assets';
 import { AssetCard } from '@/components/editor/asset-card';
 import { api } from '@/trpc/react';
-import { VideoType } from '@/server/api/routers/videos';
+import { type VideoType } from '@/server/api/routers/videos';
 import { Plus, Wand } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/spinner';
 
@@ -13,14 +13,14 @@ interface AssetGridProps {
   video: VideoType;
 }
 export const AssetGrid: React.FC<AssetGridProps> = ({ assets, video }) => {
-  const { mutate: generateAssets, isLoading } =
-    api.assets.generateAssets.useMutation();
+  const { mutate: proposeAssets, isLoading } =
+    api.assets.proposeAssets.useMutation();
   const hasAssets = assets?.length > 0;
-  const handleGenerateAssets = async (e: React.MouseEvent) => {
+  const handleProposeAssets = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!video || !video.id) throw new Error('No video id provided');
 
-    await generateAssets({ id: video.id });
+    await proposeAssets({ id: video.id });
   };
 
   const [selectedId, setSelectedId] = useState(assets ? assets[0]?.id : '');

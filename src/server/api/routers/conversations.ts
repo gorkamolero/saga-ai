@@ -113,6 +113,7 @@ export const conversationRouter = createTRPCRouter({
           script: true,
           voiceover: true,
           video: true,
+          channel: true,
         },
       });
       return conversation;
