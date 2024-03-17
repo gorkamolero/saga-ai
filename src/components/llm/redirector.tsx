@@ -8,7 +8,7 @@ export const Redirector = ({ url }: { url: string }) => {
 
   useEffect(() => {
     router.push(url);
-  }, []);
+  }, [router, url]);
 
   return null;
 };

@@ -883,6 +883,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
                             aspectRatio: aspectRatioByDuration(duration),
                           }}
                         >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           {url ? <img src={url} alt={description} /> : <div />}
                         </div>
                       }

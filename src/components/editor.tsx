@@ -1,9 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
-import { PlusCircle, PlayCircle, Wand } from 'lucide-react';
 import { type FullVideoType } from '@/lib/validators/videos';
 import { Player } from '@/components/editor/bottom-player';
 import { EditorProvider } from '@/components/editor/editor-context';
@@ -20,8 +18,6 @@ const PANEL_DEFAULT_SIZES = {
 };
 
 export const Editor = ({ video }: { video: FullVideoType }) => {
-  const [isVideoVisible, setIsVideoVisible] = useState(false);
-
   return (
     <EditorProvider video={video}>
       <div className="flex h-full flex-grow flex-col border-t">
@@ -53,7 +49,7 @@ export const Editor = ({ video }: { video: FullVideoType }) => {
             <PanelResizeHandle className="border-l" />
 
             <Panel defaultSize={PANEL_DEFAULT_SIZES.assets} className="h-full">
-              <AssetGrid assets={video?.visualAssets} video={video} />
+              <AssetGrid assets={video?.visualAssets} />
             </Panel>
           </PanelGroup>
         </div>

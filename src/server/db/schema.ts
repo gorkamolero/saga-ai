@@ -124,7 +124,7 @@ export const scripts = createTable('scripts', {
   }),
 });
 
-export const scriptsRelations = relations(scripts, ({ one, many }) => ({
+export const scriptsRelations = relations(scripts, ({ one }) => ({
   writer: one(writers),
   video: one(videos),
   idea: one(ideas, {

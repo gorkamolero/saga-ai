@@ -124,7 +124,7 @@ export const visualAssetRouter = createTRPCRouter({
         perPage: z.number().optional(),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const images = await searchUnsplashPhotos({
         query: input.query,
         page: input.page,

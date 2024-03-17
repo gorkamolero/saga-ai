@@ -1,10 +1,10 @@
 'use client';
 
-import { Composition, Video, getInputProps } from 'remotion';
+import { Composition, getInputProps } from 'remotion';
 
 import { Saga } from './Composition';
 import {
-  COMPOSITION_DURATION_IN_FRAMES,
+  // COMPOSITION_DURATION_IN_FRAMES,
   COMPOSITION_FPS,
   COMPOSITION_HEIGHT,
   COMPOSITION_ID,

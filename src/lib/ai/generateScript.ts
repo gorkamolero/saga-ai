@@ -2,10 +2,10 @@ import { bravura } from '@/app/action';
 import { scriptwriter } from '../prompts/scriptwriter';
 
 export const generateScript = async ({
-  title,
+  // title,
   description,
   style,
-  cta = 'If you like this content, follow for more!',
+  // cta = 'If you like this content, follow for more!',
 }: {
   title: string;
   description: string;

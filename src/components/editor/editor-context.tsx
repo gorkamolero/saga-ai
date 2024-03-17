@@ -54,7 +54,7 @@ export const EditorProvider: React.FC<{
     if (playerRef.current) {
       setPlayer(playerRef.current);
     }
-  }, [playerRef.current]);
+  }, []);
 
   const duration = video?.duration ?? 0;
 
@@ -76,7 +76,7 @@ export const EditorProvider: React.FC<{
         player.removeEventListener('timeupdate', handleTimeUpdate);
       };
     }
-  }, [playerRef.current]);
+  }, [player]);
 
   const seekTo = (timeInSeconds: number) => {
     const frameToSeek = Math.round(timeInSeconds * FPS);

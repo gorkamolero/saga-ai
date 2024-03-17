@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { SearchOpenImagesDialog } from './search-open-images-dialog';
 import { Button } from '../ui/button';
 import { EditorContext } from './editor-context';
-import { Edit, Image, Save, Video, Wand } from 'lucide-react';
+import { Edit, Image as ImageIcon, Save, Video, Wand } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { api } from '@/trpc/react';
 import { LoadingSpinner } from '../ui/spinner';
@@ -28,6 +28,7 @@ export const AssetCard = ({
   const { mutate: generate, isLoading: isLoadingGenerate } =
     api.assets.generateImage.useMutation();
   const handleGenerate = async (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!asset?.id || !asset.description) return;
     await generate({
       id: asset.id,
@@ -39,6 +40,7 @@ export const AssetCard = ({
   const { mutate: animate, isLoading: isLoadingAnimate } =
     api.assets.animate.useMutation();
   const handleAnimate = async (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!asset?.id) return;
     await animate({ id: asset.id });
   };
@@ -50,6 +52,8 @@ export const AssetCard = ({
     await save({ ...asset, id: asset.id });
     setIsEditing(false);
   };
+
+  console.log('isLoadingSave', isLoadingSave);
 
   const [description, setDescription] = React.useState(asset.description || '');
 
@@ -70,6 +74,7 @@ export const AssetCard = ({
               controls
             />
           ) : asset.url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={asset.url}
               alt={asset.description || 'Visual asset'}
@@ -169,7 +174,7 @@ export const AssetCard = ({
                   className="hover:scale-110 hover:bg-blue-100"
                 >
                   <span className="sr-only">Find images</span>
-                  <Image className="h-6 w-6 text-gray-500" />
+                  <ImageIcon className="h-6 w-6 text-gray-500" />
                 </Button>
               }
               assetId={asset.id}

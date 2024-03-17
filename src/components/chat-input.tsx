@@ -1,7 +1,6 @@
 'use client';
 
 import { type AI } from '@/app/action';
-import { useEnterSubmit } from '@/lib/hooks/use-enter-submit';
 import { useActions, useUIState } from 'ai/rsc';
 import { useEffect, useRef, useState } from 'react';
 import { UserMessage } from './ui/user-message';
@@ -10,10 +9,9 @@ import { useParams } from 'next/navigation';
 export const ChatInput = () => {
   const { conversationId } = useParams();
   const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useUIState<typeof AI>();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setMessages] = useUIState<typeof AI>();
   const { submitUserMessage } = useActions<typeof AI>();
-
-  const { formRef, onKeyDown } = useEnterSubmit();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -76,7 +74,7 @@ export const ChatInput = () => {
   };
 
   return (
-    <form className="h-full w-full" onSubmit={onSubmit} ref={formRef}>
+    <form className="h-full w-full" onSubmit={onSubmit}>
       <div
         className="fixed bottom-0 z-40 flex w-full origin-bottom justify-center p-8"
         style={{
@@ -85,6 +83,7 @@ export const ChatInput = () => {
       >
         <div className="relative z-10 flex min-h-12 w-full max-w-[500px] items-center justify-center gap-2 rounded-3xl bg-zinc-900 px-2 shadow-lg transition-all duration-300 sm:shadow-black/40">
           <div className="hidden items-center justify-center rounded-l-full sm:flex">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               alt="Avatar"
               width="32"

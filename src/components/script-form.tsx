@@ -12,11 +12,11 @@ import { AiMessage } from './ui/ai-message';
 
 export const ScriptForm = ({
   script: initialScript = '',
-  title,
+  // title,
   id,
 }: {
   script?: string;
-  title?: string;
+  // title?: string;
   id: string;
 }) => {
   const [script, setScript] = useState<string | null>(initialScript);
@@ -38,6 +38,7 @@ export const ScriptForm = ({
   };
 
   const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     if (script) {
       try {
         await saveScript({ id, script });

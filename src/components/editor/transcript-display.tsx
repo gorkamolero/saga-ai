@@ -3,7 +3,7 @@ import { EditorContext } from './editor-context';
 import { type WordType } from '@/lib/validators/words';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { type PanInfo, animate, motion } from 'framer-motion';
+import { type PanInfo, motion } from 'framer-motion';
 
 interface Props {
   words: WordType[];

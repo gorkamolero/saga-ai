@@ -1,26 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { api } from '@/trpc/react';
-// import { ExternalLink } from "@/components/external-link";
 import { ArrowRight } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { v4 } from 'uuid';
-
-const exampleMessages = [
-  {
-    heading: 'I have an idea',
-    message: 'I have an idea',
-  },
-  /*
-  {
-    heading: "What's the stock price of AAPL?",
-    message: "What's the stock price of AAPL?",
-  },
-  {
-    heading: "I'd like to buy 10 shares of MSFT",
-    message: "I'd like to buy 10 shares of MSFT",
-  },
-  */
-];
 
 export function EmptyScreen({
   submitMessage,

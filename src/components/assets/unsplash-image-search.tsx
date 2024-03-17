@@ -53,6 +53,7 @@ export const UnsplashImageSearch = ({ assetId }: { assetId: string }) => {
               });
             return (
               <div key={image.id} className="group relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   alt={image.alt_description || ''}
                   className="aspect-square w-full overflow-hidden rounded-lg object-cover"

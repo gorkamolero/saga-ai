@@ -3,25 +3,14 @@ import React, { useContext, useState } from 'react';
 import { EditorContext } from '@/components/editor/editor-context';
 import { type VisualAssetType } from '@/server/api/routers/assets';
 import { AssetCard } from '@/components/editor/asset-card';
-import { api } from '@/trpc/react';
-import { type VideoType } from '@/server/api/routers/videos';
-import { Plus, Wand } from 'lucide-react';
+import { Wand } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/spinner';
 
 interface AssetGridProps {
   assets: VisualAssetType[];
-  video: VideoType;
 }
-export const AssetGrid: React.FC<AssetGridProps> = ({ assets, video }) => {
-  const { mutate: proposeAssets, isLoading } =
-    api.assets.proposeAssets.useMutation();
+export const AssetGrid: React.FC<AssetGridProps> = ({ assets }) => {
   const hasAssets = assets?.length > 0;
-  const handleProposeAssets = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!video || !video.id) throw new Error('No video id provided');
-
-    await proposeAssets({ id: video.id });
-  };
 
   const [selectedId, setSelectedId] = useState(assets ? assets[0]?.id : '');
   const { setIsSelectingAsset, saveAsset, setSelectedAsset } =
@@ -59,7 +48,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({ assets, video }) => {
 
       {hasAssets ? (
         <>
-          {assets.map((asset, i) => (
+          {assets.map((asset) => (
             <React.Fragment key={asset?.url || asset?.animation || asset?.id}>
               <input
                 type="radio"
@@ -83,7 +72,6 @@ export const AssetGrid: React.FC<AssetGridProps> = ({ assets, video }) => {
         </>
       ) : (
         <button
-          onClick={handleGenerateAssets}
           className="flex flex-col items-center justify-center gap-2 rounded-lg border border-gray-200 p-4 shadow-sm transition-colors hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800"
           style={{ aspectRatio: '1' }}
           disabled={isLoading}

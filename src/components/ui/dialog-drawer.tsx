@@ -53,6 +53,7 @@ export function DialogDrawer({
     if (!open) {
       onClose && onClose();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   return isDesktop ? (

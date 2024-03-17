@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -9,17 +9,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from '@/components/ui/form';
 
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import { Input } from '@/components/ui/input';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useState } from 'react';
 
-import { FaGithub } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import { signUp } from "../actions";
+// import { FaGithub } from "react-icons/fa";
+// import { FcGoogle } from "react-icons/fc";
+import { signUp } from '../actions';
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -35,13 +35,13 @@ export default function Signup() {
   const form = useForm<SignupInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: '',
+      password: '',
     },
   });
 
   const onSubmit = async (data: SignupInput) => {
-    setSuccess("Check your email for further instructions");
+    setSuccess('Check your email for further instructions');
     const result = await signUp(data);
     if (result?.error) {
       setSuccess(null);
@@ -55,7 +55,7 @@ export default function Signup() {
       <div className="h-screen w-full bg-background lg:w-1/2">
         <div className="flex h-full items-center justify-center">
           <div className="w-full max-w-md p-8">
-            <h1 className="mb-4 text-2xl font-semibold">Sign up</h1>
+            <h1 className="text-2xl mb-4 font-semibold">Sign up</h1>
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -105,14 +105,14 @@ export default function Signup() {
                 </Button>
                 {success && (
                   <div className="mb-3 mt-1 rounded-md border border-border bg-secondary/50 p-3">
-                    <p className="text-center text-sm font-medium text-muted-foreground">
+                    <p className="text-sm text-center font-medium text-muted-foreground">
                       {success}
                     </p>
                   </div>
                 )}
                 {error && (
                   <div className="mb-3 mt-1 rounded-md border border-destructive bg-destructive/10 p-3">
-                    <p className="text-center text-sm font-medium text-destructive">
+                    <p className="text-sm text-center font-medium text-destructive">
                       {error}
                     </p>
                   </div>
@@ -128,7 +128,7 @@ export default function Signup() {
             <OauthButton provider={"google"} />
             <OauthButton provider={"github"} />
              */}
-            <p className="py-4 text-center text-sm text-muted-foreground underline">
+            <p className="text-sm py-4 text-center text-muted-foreground underline">
               <Link href="/login">Already have an account? Sign in</Link>
             </p>
           </div>

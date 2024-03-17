@@ -41,7 +41,7 @@ export const TypewriterEffect = ({
         },
       );
     }
-  }, [isInView]);
+  }, [isInView, animate]);
 
   const renderWords = () => {
     return (
@@ -71,7 +71,7 @@ export const TypewriterEffect = ({
   return (
     <div
       className={cn(
-        'text-center text-base font-bold sm:text-xl md:text-3xl lg:text-5xl',
+        'sm:text-xl md:text-3xl lg:text-5xl text-center text-base font-bold',
         className,
       )}
     >
@@ -155,7 +155,7 @@ export const TypewriterEffectSmooth = ({
         }}
       >
         <div
-          className="lg:text:3xl text-xs font-bold sm:text-base md:text-xl xl:text-5xl"
+          className="lg:text:3xl text-xs md:text-xl xl:text-5xl font-bold sm:text-base"
           style={{
             whiteSpace: 'nowrap',
           }}

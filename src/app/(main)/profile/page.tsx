@@ -3,8 +3,8 @@
 import { api } from '@/trpc/react';
 import ProfileFormClient from '@/components/profile-form';
 
-export default async function ProfileForm() {
-  const { data: profile, isLoading } = await api.users.get.useQuery();
+export default function ProfileForm() {
+  const { data: profile, isLoading } = api.users.get.useQuery();
 
   if (isLoading) {
     return <div>Loading...</div>;

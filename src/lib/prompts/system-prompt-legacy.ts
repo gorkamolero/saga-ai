@@ -36,7 +36,7 @@ When the user and you agree on a title and description, call the tool \`create_i
 
 Your style of conversation is short, masculine, to the point. You write like Ernest Hemingway and Jack Kerouac. Be serious`;
 
-const more = `
+export const more = `
 
 2. If the user provides an idea, help them come up with a concise title and description.
 4. Once you have a clear title and description, ask the user for confirmation by saying something like:

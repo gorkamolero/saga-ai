@@ -1,4 +1,3 @@
-import { v4 } from 'uuid';
 import parseJson from 'parse-json';
 import { type TranscriptType } from '../validators/transcript';
 import { visualAssetSchema } from '@/server/api/routers/assets';

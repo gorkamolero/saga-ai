@@ -2,10 +2,10 @@ import { cn } from '@/lib/utils';
 
 export const AiMessage = ({
   children,
-  isStreaming,
+  // isStreaming,
 }: {
   children: React.ReactNode;
-  isStreaming?: boolean;
+  // isStreaming?: boolean;
 }) => {
   return (
     <div

@@ -2,13 +2,6 @@
 
 import { useState, useRef } from 'react';
 
-import {
-  Card,
-  CardTitle,
-  CardDescription,
-  CardHeader,
-  CardContent,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
 import { Pause } from 'lucide-react';
@@ -55,7 +48,7 @@ export const AudioSelector = ({
   </div>
 );
 
-export const TrackItem: React.FC<TrackItemProps> = ({ track, index }) => {
+export const TrackItem: React.FC<TrackItemProps> = ({ track }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 

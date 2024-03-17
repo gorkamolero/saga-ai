@@ -1,4 +1,4 @@
-async function generateImage({
+export async function generateImage({
   prompt,
   negativePrompt,
   width,
