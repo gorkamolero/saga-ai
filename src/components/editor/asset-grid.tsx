@@ -74,14 +74,9 @@ export const AssetGrid: React.FC<AssetGridProps> = ({ assets }) => {
         <button
           className="flex flex-col items-center justify-center gap-2 rounded-lg border border-gray-200 p-4 shadow-sm transition-colors hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-gray-800"
           style={{ aspectRatio: '1' }}
-          disabled={isLoading}
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-full border bg-gray-200 dark:bg-gray-700">
-            {isLoading ? (
-              <LoadingSpinner />
-            ) : (
-              <Wand className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-            )}
+            <Wand className="h-6 w-6 text-gray-600 dark:text-gray-300" />
           </div>
           <span>Generate</span>
         </button>
