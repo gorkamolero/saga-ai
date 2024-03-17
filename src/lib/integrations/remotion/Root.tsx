@@ -2,7 +2,7 @@
 
 import { Composition, Video, getInputProps } from 'remotion';
 
-import { saga } from './Composition';
+import { Saga } from './Composition';
 import {
   COMPOSITION_DURATION_IN_FRAMES,
   COMPOSITION_FPS,
@@ -22,7 +22,7 @@ export const RemotionRoot = () => {
     <>
       <Composition
         id={COMPOSITION_ID}
-        component={saga}
+        component={Saga}
         durationInFrames={inputProps.durationInFrames as number}
         fps={COMPOSITION_FPS}
         width={COMPOSITION_WIDTH}
