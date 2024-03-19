@@ -26,9 +26,9 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className="fixed top-0 overflow-y-hidden"
+      className="fixed top-0 w-full overflow-y-hidden"
     >
-      <body className={`font-sans ${inter.variable}`}>
+      <body className={`font-sans ${inter.variable} w-full`}>
         <AI>
           <TRPCReactProvider>
             <ThemeProvider

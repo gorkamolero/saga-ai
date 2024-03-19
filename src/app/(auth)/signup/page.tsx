@@ -50,76 +50,74 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex">
-      <div className="hidden h-screen grow bg-secondary/15 lg:block" />
-      <div className="h-screen w-full bg-background lg:w-1/2">
-        <div className="flex h-full items-center justify-center">
-          <div className="w-full max-w-md p-8">
-            <h1 className="text-2xl mb-4 font-semibold">Sign up</h1>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="flex w-full flex-1 flex-col justify-center gap-2 text-muted-foreground animate-in"
-              >
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-muted-foreground">
-                        Email Address
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Your email address"
-                          {...field}
-                          autoComplete="on"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-muted-foreground">
-                        Password
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Your password"
-                          type="password"
-                          autoComplete="on"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button variant="default" className="my-3 w-full" type="submit">
-                  Sign up
-                </Button>
-                {success && (
-                  <div className="mb-3 mt-1 rounded-md border border-border bg-secondary/50 p-3">
-                    <p className="text-sm text-center font-medium text-muted-foreground">
-                      {success}
-                    </p>
-                  </div>
+    <div className="h-screen w-full bg-background lg:w-1/2">
+      <div className="flex h-full items-center justify-center">
+        <div className="w-full max-w-md p-8">
+          <h1 className="text-2xl mb-4 font-semibold">Sign up</h1>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex w-full flex-1 flex-col justify-center gap-2 text-muted-foreground animate-in"
+            >
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-muted-foreground">
+                      Email Address
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Your email address"
+                        {...field}
+                        autoComplete="on"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-                {error && (
-                  <div className="mb-3 mt-1 rounded-md border border-destructive bg-destructive/10 p-3">
-                    <p className="text-sm text-center font-medium text-destructive">
-                      {error}
-                    </p>
-                  </div>
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-muted-foreground">
+                      Password
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Your password"
+                        type="password"
+                        autoComplete="on"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </form>
-            </Form>
-            {/* 
+              />
+              <Button variant="default" className="my-3 w-full" type="submit">
+                Sign up
+              </Button>
+              {success && (
+                <div className="mb-3 mt-1 rounded-md border border-border bg-secondary/50 p-3">
+                  <p className="text-sm text-center font-medium text-muted-foreground">
+                    {success}
+                  </p>
+                </div>
+              )}
+              {error && (
+                <div className="mb-3 mt-1 rounded-md border border-destructive bg-destructive/10 p-3">
+                  <p className="text-sm text-center font-medium text-destructive">
+                    {error}
+                  </p>
+                </div>
+              )}
+            </form>
+          </Form>
+          {/* 
             <div className="flex items-center gap-2 py-4">
               <hr className="w-full" />
               <p className="text-xs text-muted-foreground">OR</p>
@@ -128,10 +126,9 @@ export default function Signup() {
             <OauthButton provider={"google"} />
             <OauthButton provider={"github"} />
              */}
-            <p className="text-sm py-4 text-center text-muted-foreground underline">
-              <Link href="/login">Already have an account? Sign in</Link>
-            </p>
-          </div>
+          <p className="text-sm py-4 text-center text-muted-foreground underline">
+            <Link href="/login">Already have an account? Sign in</Link>
+          </p>
         </div>
       </div>
     </div>
