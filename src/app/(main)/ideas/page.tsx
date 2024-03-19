@@ -10,6 +10,7 @@ async function getIdeas() {
 }
 
 export default async function IdeasPage() {
+  console.log('rendering ideas page');
   const ideas = await getIdeas();
 
   return (
