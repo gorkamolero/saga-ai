@@ -1,8 +1,10 @@
 import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
 import { HeaderSkeleton } from '@/components/ui/header-skeleton';
 import { api } from '@/trpc/server';
+import { unstable_noStore as noStore } from 'next/cache';
 
 async function getIdeas() {
+  noStore();
   const ideas = await api.ideas.getAll.query();
   return ideas;
 }
