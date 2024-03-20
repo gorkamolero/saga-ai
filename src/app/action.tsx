@@ -439,13 +439,16 @@ Besides that, you can also chat with users and help him develop his ideas if nee
         </AiMessage>,
       );
     } catch (error) {
+      console.error('Error saving idea:', error);
       reply.done(
         <AiMessage>
           <p>
             Sorry, I couldn't save the idea "{title}" - "{description}". Would
             you like to try again?
           </p>
-          <p>Error: {JSON.stringify((error as any).message)}</p>
+          {error && (error as any).message ? (
+            <p>Error: {JSON.stringify((error as any).message)}</p>
+          ) : null}
         </AiMessage>,
       );
     }
