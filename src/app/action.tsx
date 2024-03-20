@@ -435,6 +435,8 @@ Besides that, you can also chat with users and help him develop his ideas if nee
             Sorry, I couldn't save the idea "{title}" - "{description}". Would
             you like to try again?
           </p>
+          <p>{JSON.stringify((error as any).message)}</p>
+          <p>{JSON.stringify(error)}</p>
         </AiMessage>,
       );
     }
