@@ -377,11 +377,21 @@ Besides that, you can also chat with users and help him develop his ideas if nee
     );
 
     try {
-      const conversation = await api.conversations.get.query({
+      let conversation = await api.conversations.get.query({
         id: conversationId,
       });
       if (!conversation) {
-        throw new Error('Conversation not found');
+        conversation = await api.conversations.createAndSetInUser.mutate({
+          id: conversationId,
+        });
+      }
+      if (!conversation) {
+        reply.done(
+          <AiMessage>
+            <p>I can't save or find the conversation. Talk to my masters</p>
+          </AiMessage>,
+        );
+        return;
       }
       if (conversation.ideaId) {
         conversationId = v4();
@@ -435,8 +445,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
             Sorry, I couldn't save the idea "{title}" - "{description}". Would
             you like to try again?
           </p>
-          <p>{JSON.stringify((error as any).message)}</p>
-          <p>{JSON.stringify(error)}</p>
+          <p>Error: {JSON.stringify((error as any).message)}</p>
         </AiMessage>,
       );
     }
@@ -908,6 +917,7 @@ Besides that, you can also chat with users and help him develop his ideas if nee
               Sorry, I couldn't generate the visual assets for you. Would you
               like me to try again?
             </p>
+            <p>Error: {JSON.stringify((error as any).message)}</p>
           </AiMessage>,
         );
       }
