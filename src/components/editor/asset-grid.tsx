@@ -4,7 +4,6 @@ import { EditorContext } from '@/components/editor/editor-context';
 import { type VisualAssetType } from '@/server/api/routers/assets';
 import { AssetCard } from '@/components/editor/asset-card';
 import { Wand } from 'lucide-react';
-import { LoadingSpinner } from '@/components/ui/spinner';
 
 interface AssetGridProps {
   assets: VisualAssetType[];
