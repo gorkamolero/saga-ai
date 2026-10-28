@@ -73,6 +73,7 @@ export const Saga: React.FC<sagaProps> = ({
                     src={asset?.url || ''}
                     style={{
                       transform,
+                      width: '100%', height: '100%', objectFit: 'cover',
                     }}
                   />
                 )}
@@ -88,13 +89,7 @@ export const Saga: React.FC<sagaProps> = ({
 
       <AbsoluteFill>
         <Audio src={voiceoverUrl} />
-        <Audio
-          src={
-            music ||
-            'https://ezamdwrrzqrnyewhqdup.supabase.co/storage/v1/object/public/assets/deep.mp3'
-          }
-          volume={0.2}
-        />
+        {music && <Audio src={music} volume={0.2} />}
       </AbsoluteFill>
 
       <TranscriptionCaptions subtitles={subtitles} fps={fps} />

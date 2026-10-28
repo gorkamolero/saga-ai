@@ -3,22 +3,19 @@ import { FPS } from '@/lib/constants';
 import { Saga, type sagaProps } from '@/lib/integrations/remotion/Composition';
 import { convertSecondsToFrames } from '@/lib/utils/animations';
 import { type TranscriptType } from '@/lib/validators/transcript';
-import { type VisualAssetType } from '@/lib/validators/visual-assets';
 import { Player } from '@remotion/player';
 import { useContext } from 'react';
 import { EditorContext } from './editor-context';
 
 export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
-  const { playerRef, togglePlay } = useContext(EditorContext);
+  const { playerRef, assets: editorAssets } = useContext(EditorContext);
   const transcript = video?.voiceover?.transcript as TranscriptType;
-  const assets = video?.visualAssets.sort(
-    (a: any, b: any) => a.index - b.index,
-  );
+  const assets = [...editorAssets].sort((a: any, b: any) => a.index - b.index);
   const videoDuration = video?.duration || 0;
 
   const ourFPS = FPS;
 
-  const duration = Math.min(videoDuration + 2, 60);
+  const duration = Math.max(videoDuration, 1);
 
   const durationInFrames = convertSecondsToFrames(duration, ourFPS);
 
@@ -35,23 +32,31 @@ export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
     fps: ourFPS,
     script: video.script,
     subtitles,
-    assets: assets as VisualAssetType[],
+    assets,
     // TODO: MUSIC
     music:
-      'https://ezamdwrrzqrnyewhqdup.supabase.co/storage/v1/object/public/assets/deep.mp3?t=2024-03-04T12%3A55%3A07.216Z',
+      process.env.NODE_ENV === 'development' &&
+      process.env.NEXT_PUBLIC_LOCAL_DEMO === '1'
+        ? ''
+        : 'https://ezamdwrrzqrnyewhqdup.supabase.co/storage/v1/object/public/assets/deep.mp3?t=2024-03-04T12%3A55%3A07.216Z',
     voiceover: video.voiceover.url!,
     durationInFrames,
   };
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-black/80 p-4 transition-colors hover:bg-black">
+    <div className="flex h-full w-full items-center justify-center bg-black/90 p-5">
       <div
         className="flex w-full flex-col items-center justify-center"
-        style={{ aspectRatio: '9 / 16' }}
-        onClick={togglePlay}
+        style={{
+          aspectRatio: '9 / 16',
+          height: '100%',
+          width: 'auto',
+          maxWidth: '100%',
+        }}
       >
         <Player
-          clickToPlay={false}
+          controls
+          clickToPlay
           component={Saga}
           inputProps={inputProps}
           durationInFrames={durationInFrames}
@@ -60,6 +65,7 @@ export const RemotionPlayer = ({ video }: { video: FullVideoType }) => {
           fps={ourFPS}
           style={{
             width: '100%',
+            height: '100%',
             aspectRatio: '9/16',
           }}
           initiallyShowControls

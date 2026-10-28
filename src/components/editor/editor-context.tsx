@@ -12,6 +12,7 @@ import React, {
 } from 'react';
 
 interface EditorContextProps {
+  assets: VisualAssetType[];
   isPlaying: boolean;
   setIsPlaying: (isPlaying: boolean) => void;
   currentTime: number;
@@ -27,6 +28,7 @@ interface EditorContextProps {
 }
 
 export const EditorContext = createContext<EditorContextProps>({
+  assets: [],
   isPlaying: false,
   setIsPlaying: () => {},
   currentTime: 0,
@@ -45,6 +47,7 @@ export const EditorProvider: React.FC<{
   children: React.ReactNode;
   video: FullVideoType;
 }> = ({ children, video }) => {
+  const [assets, setAssets] = useState<VisualAssetType[]>(video.visualAssets);
   const [player, setPlayer] = useState<PlayerRef | null>(null);
   const playerRef = useRef<PlayerRef>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -69,17 +72,28 @@ export const EditorProvider: React.FC<{
       };
 
       // Add event listener for timeupdate
-      player.addEventListener('timeupdate', handleTimeUpdate);
+      player.addEventListener('frameupdate', handleTimeUpdate);
+      const onPlay = () => setIsPlaying(true);
+      const onPause = () => setIsPlaying(false);
+      player.addEventListener('play', onPlay);
+      player.addEventListener('pause', onPause);
+      player.addEventListener('ended', onPause);
 
       // Cleanup function to remove the event listener
       return () => {
-        player.removeEventListener('timeupdate', handleTimeUpdate);
+        player.removeEventListener('frameupdate', handleTimeUpdate);
+        player.removeEventListener('play', onPlay);
+        player.removeEventListener('pause', onPause);
+        player.removeEventListener('ended', onPause);
       };
     }
   }, [player]);
 
   const seekTo = (timeInSeconds: number) => {
-    const frameToSeek = Math.round(timeInSeconds * FPS);
+    const frameToSeek = Math.min(
+      Math.max(0, Math.round(timeInSeconds * FPS)),
+      Math.max(0, Math.ceil(duration * FPS) - 1),
+    );
     player?.seekTo(frameToSeek);
   };
 
@@ -105,7 +119,7 @@ export const EditorProvider: React.FC<{
     }
   }, [isSelectingAsset, player]);
 
-  const { mutate: mutateAsset } = api.assets.update.useMutation();
+  const { mutateAsync: mutateAsset } = api.assets.update.useMutation();
   const saveAsset = async (asset: VisualAssetType) => {
     if (!asset.id) {
       console.error('Asset ID is undefined.');
@@ -115,11 +129,20 @@ export const EditorProvider: React.FC<{
       ...asset,
       id: asset.id,
     });
+    setAssets((previous) =>
+      previous.map((item) =>
+        item.id === asset.id ? { ...item, ...asset } : item,
+      ),
+    );
+    setSelectedAsset((previous) =>
+      previous?.id === asset.id ? { ...previous, ...asset } : previous,
+    );
   };
 
   return (
     <EditorContext.Provider
       value={{
+        assets,
         isPlaying,
         setIsPlaying,
         currentTime,

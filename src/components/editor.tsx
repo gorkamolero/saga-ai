@@ -1,65 +1,67 @@
 'use client';
 
-import React from 'react';
-import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels';
+import { useState } from 'react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { type FullVideoType } from '@/lib/validators/videos';
-import { Player } from '@/components/editor/bottom-player';
-import { EditorProvider } from '@/components/editor/editor-context';
-import { TranscriptDisplay } from '@/components/editor/transcript-display';
+import { EditorProvider } from './editor/editor-context';
+import { TranscriptDisplay } from './editor/transcript-display';
 import { RemotionPlayer } from './editor/remotion-player';
 import { type WordType } from '@/lib/validators/words';
 import { AssetGrid } from './editor/asset-grid';
-
-const PANEL_DEFAULT_SIZES = {
-  video: 34,
-  transcript: 33,
-  assets: 33,
-  footerHeight: '6rem',
-};
+import { Button } from './ui/button';
 
 export const Editor = ({ video }: { video: FullVideoType }) => {
+  const [showAssets, setShowAssets] = useState(true);
   return (
     <EditorProvider video={video}>
-      <div className="flex h-full flex-grow flex-col border-t">
-        <div
-          className={`flex-grow flex-col pb-[${PANEL_DEFAULT_SIZES.footerHeight}]`}
-          style={{
-            height: `calc(100% - ${PANEL_DEFAULT_SIZES.footerHeight})`,
-            paddingBottom: PANEL_DEFAULT_SIZES.footerHeight,
-          }}
-        >
-          <PanelGroup direction="horizontal" autoSaveId="asset-interface">
-            <Panel defaultSize={PANEL_DEFAULT_SIZES.video}>
-              {video && <RemotionPlayer video={video} />}
-            </Panel>
-
-            <PanelResizeHandle className="border-l" />
-            <Panel
-              defaultSize={PANEL_DEFAULT_SIZES.transcript}
-              className="h-full"
-            >
-              {video?.voiceover?.transcript && (
-                <TranscriptDisplay
-                  words={
-                    (video.voiceover.transcript as { words: WordType[] }).words
-                  }
-                />
-              )}
-            </Panel>
-            <PanelResizeHandle className="border-l" />
-
-            <Panel defaultSize={PANEL_DEFAULT_SIZES.assets} className="h-full">
-              <AssetGrid assets={video?.visualAssets} />
-            </Panel>
-          </PanelGroup>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-t">
+        <div className="flex min-h-0 flex-1">
+          <section className="flex min-w-0 flex-1 flex-col">
+            <div className="flex h-11 shrink-0 items-center justify-between border-b px-5">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-semibold uppercase tracking-widest">
+                  Preview
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  9:16 · {video.duration}s
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAssets(!showAssets)}
+              >
+                {showAssets ? (
+                  <PanelLeftClose className="mr-2 h-4 w-4" />
+                ) : (
+                  <PanelLeftOpen className="mr-2 h-4 w-4" />
+                )}
+                Assets
+              </Button>
+            </div>
+            <div className="min-h-0 flex-1">
+              <RemotionPlayer video={video} />
+            </div>
+          </section>
+          {showAssets && (
+            <aside className="flex w-[390px] shrink-0 flex-col border-l max-md:w-[280px]">
+              <div className="flex h-11 shrink-0 items-center justify-between border-b px-4">
+                <span className="text-xs font-semibold uppercase tracking-widest">
+                  Visual assets
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {video.visualAssets.length} clips
+                </span>
+              </div>
+              <div className="min-h-0 flex-1">
+                <AssetGrid assets={video.visualAssets} />
+              </div>
+            </aside>
+          )}
         </div>
-        <div
-          className={`fixed bottom-0 left-0 right-0 flex w-full`}
-          style={{ height: PANEL_DEFAULT_SIZES.footerHeight }}
-        >
-          <Player />
-          {/* Render the audio/video player */}
-        </div>
+        <TranscriptDisplay
+          words={(video.voiceover.transcript as { words: WordType[] }).words}
+        />
       </div>
     </EditorProvider>
   );

@@ -66,11 +66,11 @@ export const AssetCard = ({
       <Card
         className={`text-sm group h-full rounded-lg border border-gray-200 text-left text-gray-500 shadow-sm ${isSelected ? 'shadow-xl' : ''}`}
       >
-        <CardContent className="flex h-full flex-col gap-2 pt-8">
+        <CardContent className="flex h-full flex-col gap-2 p-3">
           {asset.animation ? (
             <video
               src={asset.animation}
-              className="h-full w-full rounded-lg object-cover"
+              className="aspect-video w-full rounded-lg object-cover"
               controls
             />
           ) : asset.url ? (
@@ -78,7 +78,7 @@ export const AssetCard = ({
             <img
               src={asset.url}
               alt={asset.description || 'Visual asset'}
-              className="h-full w-full rounded-lg object-cover"
+              className="aspect-video w-full rounded-lg object-cover"
             />
           ) : (
             <div className="h-full w-full flex-grow items-center justify-center bg-gray-50">
@@ -96,13 +96,20 @@ export const AssetCard = ({
               className="text-sm mt-4"
             />
           ) : (
-            <p className="text-sm mt-4" onClick={() => setIsEditing(true)}>
+            <p
+              className="text-xs leading-relaxed"
+              onClick={() => setIsEditing(true)}
+            >
               {asset.description}
             </p>
           )}
           <div className="text-xs mt-auto flex w-full items-center justify-between text-left text-gray-500">
-            {asset?.start && <span>Start: {asset.start}</span>}
-            {asset?.end && <span>End: {asset.end}</span>}
+            {asset?.start != null && (
+              <span>Start: {(asset.start / 1000).toFixed(2)}s</span>
+            )}
+            {asset?.end != null && (
+              <span>End: {(asset.end / 1000).toFixed(2)}s</span>
+            )}
           </div>
 
           <div

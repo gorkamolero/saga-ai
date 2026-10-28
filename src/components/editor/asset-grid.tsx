@@ -8,7 +8,10 @@ import { Wand } from 'lucide-react';
 interface AssetGridProps {
   assets: VisualAssetType[];
 }
-export const AssetGrid: React.FC<AssetGridProps> = ({ assets }) => {
+export const AssetGrid: React.FC<AssetGridProps> = ({
+  assets: _initialAssets,
+}) => {
+  const { assets } = useContext(EditorContext);
   const hasAssets = assets?.length > 0;
 
   const [selectedId, setSelectedId] = useState(assets ? assets[0]?.id : '');
@@ -23,15 +26,15 @@ export const AssetGrid: React.FC<AssetGridProps> = ({ assets }) => {
   };
 
   if (!assets) return null;
-  assets.sort((a, b) => {
+  const sortedAssets = [...assets].sort((a, b) => {
     if (a.start === undefined || b.start === undefined) return 0;
     return (a.start || 0) > (b.start || 0) ? 1 : -1;
   });
 
   return (
     <div
-      className="relative grid h-full flex-grow items-stretch gap-4 gap-y-4 overflow-y-auto p-4"
-      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}
+      className="relative grid h-full flex-grow content-start items-stretch gap-3 overflow-y-auto p-4"
+      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}
     >
       {/* <button
         // onClick={addAsset}
@@ -47,7 +50,7 @@ export const AssetGrid: React.FC<AssetGridProps> = ({ assets }) => {
 
       {hasAssets ? (
         <>
-          {assets.map((asset) => (
+          {sortedAssets.map((asset) => (
             <React.Fragment key={asset?.url || asset?.animation || asset?.id}>
               <input
                 type="radio"
